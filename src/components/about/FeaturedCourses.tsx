@@ -63,7 +63,7 @@ export default function FeaturedCourses() {
                     href={`/courses/${course.slug}`}
                     className="group block"
                   >
-                    <Card className="overflow-hidden border border-leaf-border hover:shadow-lg">
+                  <Card className="overflow-hidden border border-leaf-border bg-white py-0 hover:shadow-lg">
                       <div className="relative aspect-16/10 overflow-hidden bg-leaf-soft">
                         <Image
                           src={course.thumbnail || "/courses/web-development.jpg"}
@@ -74,12 +74,11 @@ export default function FeaturedCourses() {
                         />
                       </div>
 
-                      <CardContent className="flex items-center justify-between gap-4 p-5">
+                      <CardContent className="flex items-center justify-between p-6">
                         <h3 className="line-clamp-2 text-sm font-semibold text-leaf-navy">
                           {course.title}
                         </h3>
-
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-leaf-soft text-leaf-green-dark transition-all duration-300 group-hover:bg-leaf-green-dark group-hover:text-white">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full  text-leaf-green-dark transition-all duration-30">
                           <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                         </div>
                       </CardContent>
