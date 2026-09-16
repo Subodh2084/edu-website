@@ -45,41 +45,28 @@ export default function PopularCourses() {
               key={course.id}
               className="group overflow-hidden border-leaf-border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
-              {/* Thumbnail */}
               <div className="aspect-[16/10] bg-leaf-soft">
-                {/* Course image */}
               </div>
-
               <CardContent className="p-5">
-                {/* Level */}
                 <Badge className="mb-3 bg-leaf-soft text-leaf-navy hover:bg-leaf-soft">
                   {course.level}
                 </Badge>
-
-                {/* Title */}
                 <h3 className="line-clamp-2 text-lg font-semibold text-leaf-navy">
                   {course.title}
                 </h3>
-
-                {/* Description */}
                 <p className="mt-2 line-clamp-2 text-sm leading-6 text-leaf-muted">
                   {course.short_description}
                 </p>
-
-                {/* Course Meta */}
                 <div className="mt-4 flex items-center gap-4 text-sm text-leaf-muted">
                   <span className="flex items-center gap-1.5">
                     <Clock className="size-4 text-leaf-green-dark" />
                     {course.duration}
                   </span>
-
                   <span className="flex items-center gap-1.5">
                     <BookOpen className="size-4 text-leaf-green-dark" />
                     {course.language}
                   </span>
                 </div>
-
-                {/* Price */}
                 <div className="mt-5">
                   {course.discount_price ? (
                     <div className="flex items-center gap-2">
@@ -97,8 +84,6 @@ export default function PopularCourses() {
                     </span>
                   )}
                 </div>
-
-                {/* CTA */}
                 <Link
                   href={`/courses/${course.slug}`}
                   className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-leaf-green-dark px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-leaf-green-dark/90"
@@ -110,8 +95,6 @@ export default function PopularCourses() {
             </Card>
           ))}
         </div>
-
-        {/* Mobile CTA */}
         <Link
           href="/courses"
           className="hidden items-center gap-2 rounded-md border border-leaf-border px-4 py-2 text-sm font-medium text-leaf-navy transition-colors hover:bg-leaf-soft sm:hidden"

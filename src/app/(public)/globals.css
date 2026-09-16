@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+:root {
+  --leaf-navy: #071D5C;
+  --leaf-green: #2EDB22;
+  --leaf-green-dark: #16A516;
+
+  --background: #FFFFFF;
+  --background-soft: #F6FAF7;
+  --background-green: #EAF8E8;
+  --background-dark: #071D5C;
+
+  --text-primary: #071D5C;
+  --text-secondary: #475467;
+  --text-muted: #667085;
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-muted: #D0D5DD;
+
+  --border: #DCE5DE;
+  --border-subtle: #E7ECE9;
+
+  --success: #16A516;
+  --warning: #B7791F;
+  --error: #D92D20;
+  --info: #175CD3;
+}
+
+@theme inline {
+  --color-leaf-navy: var(--leaf-navy);
+  --color-leaf-green: var(--leaf-green);
+  --color-leaf-green-dark: var(--leaf-green-dark);
+  --color-leaf-muted: var(--text-muted);
+  --color-leaf-text: var(--text-secondary);
+  --color-leaf-border: var(--border);
+  --color-leaf-soft: var(--background-green);
+  --color-leaf-bg: var(--background-soft);
+}
+
+body {
+  background:
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(46, 219, 34, 0.08),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 10% 30%,
+      rgba(7, 29, 92, 0.04),
+      transparent 30%
+    ),
+    #ffffff;
+}
+
+.footer {
+  margin-top: auto;
+  color: var(--text-on-dark);
+}
+
+.footer-main {
+  background: #01082D;
+  padding: 4rem 0 3rem;
+}
+
+.footer .container {
+  width: min(100% - 2.5rem, 80rem);
+  margin-inline: auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+  gap: 3rem;
+}
+
+.footer-brand {
+  max-width: 24rem;
+}
+
+.footer-logo {
+  display: inline-flex;
+  margin-bottom: 1.25rem;
+}
+
+.footer-logo-img {
+  width: 11.25rem;
+  height: auto;
+}
+
+.footer-brand-desc {
+  margin: 0 0 1.5rem;
+  color: var(--text-on-dark-muted);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.footer-contact-info {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--text-on-dark-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.footer-contact-item:hover {
+  color: var(--leaf-green);
+}
+
+.footer-col h4 {
+  margin: 0 0 1.25rem;
+  color: var(--text-on-dark);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.footer-col ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-col a,
+.footer-bottom-links a {
+  color: var(--text-on-dark-muted);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.footer-col a:hover,
+.footer-bottom-links a:hover {
+  color: var(--leaf-green);
+}
+
+.footer-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 1.5rem;
+}
+
+.footer-socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: var(--text-on-dark-muted);
+}
+
+.footer-socials a:hover {
+  border-color: var(--leaf-green);
+  background: var(--leaf-green);
+  color: var(--leaf-navy);
+}
+
+.footer-bottom {
+  background: #01082D;
+  padding: 1.25rem 0;
+}
+
+.footer-bottom-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.footer-bottom p {
+  margin: 0;
+  color: var(--text-on-dark-muted);
+  font-size: 0.8125rem;
+}
+
+.footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.footer-dot {
+  color: var(--text-on-dark-muted);
+}
+
+@media (max-width: 48rem) {
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5rem 1.5rem;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+    max-width: 34rem;
+  }
+
+  .footer-bottom-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 30rem) {
+  .footer-main {
+    padding: 3rem 0 2.5rem;
+  }
+
+  .footer .container {
+    width: min(100% - 2rem, 80rem);
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-brand {
+    grid-column: auto;
+  }
+}
