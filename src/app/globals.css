@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --leaf-navy: #071D5C;
+  --leaf-green: #2EDB22;
+  --leaf-green-dark: #16A516;
+
+  --background: #FFFFFF;
+  --background-soft: #F6FAF7;
+  --background-green: #EAF8E8;
+  --background-dark: #071D5C;
+
+  --text-primary: #071D5C;
+  --text-secondary: #475467;
+  --text-muted: #667085;
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-muted: #D0D5DD;
+
+  --border: #DCE5DE;
+  --border-subtle: #E7ECE9;
+
+  --success: #16A516;
+  --warning: #B7791F;
+  --error: #D92D20;
+  --info: #175CD3;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-leaf-navy: var(--leaf-navy);
+  --color-leaf-green: var(--leaf-green);
+  --color-leaf-green-dark: var(--leaf-green-dark);
+  --color-leaf-muted: var(--text-muted);
+  --color-leaf-text: var(--text-secondary);
+  --color-leaf-border: var(--border);
+  --color-leaf-soft: var(--background-green);
+  --color-leaf-bg: var(--background-soft);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(46, 219, 34, 0.08),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 10% 30%,
+      rgba(7, 29, 92, 0.04),
+      transparent 30%
+    ),
+    #ffffff;
 }
