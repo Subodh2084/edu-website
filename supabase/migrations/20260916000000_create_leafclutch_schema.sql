@@ -555,3 +555,12 @@ CREATE POLICY "Public Storage Read Access" ON storage.objects
 
 CREATE POLICY "Admin Storage Full Access" ON storage.objects
   FOR ALL USING (public.is_admin());
+
+-- 24. GLOBAL PERMISSIONS & DEFAULT PRIVILEGES
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+
