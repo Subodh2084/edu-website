@@ -37,15 +37,13 @@ export default function PopularCourses() {
             <ArrowRight className="size-4" />
           </Link>
         </div>
-
-        {/* Course Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {popularCourses.map((course) => (
             <Card
               key={course.id}
-              className="group overflow-hidden border-leaf-border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              className="group overflow-hidden border-leaf-border shadow bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
-              <div className="aspect-[16/10] bg-leaf-soft">
+              <div className="aspect-16/10 bg-leaf-soft">
               </div>
               <CardContent className="p-5">
                 <Badge className="mb-3 bg-leaf-soft text-leaf-navy hover:bg-leaf-soft">
