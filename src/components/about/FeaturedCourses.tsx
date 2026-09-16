@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -13,12 +14,17 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-import { courses } from "@/data/courses";
+import { getFeaturedCourses } from "@/lib/queries/courses";
+import type { Course } from "@/types/course";
 
 export default function FeaturedCourses() {
-  const featuredCourses = courses.filter(
-    (course) => course.popular && course.status === "published",
-  );
+  const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    getFeaturedCourses().then((data) => {
+      setFeaturedCourses(data);
+    });
+  }, []);
 
   if (!featuredCourses.length) return null;
 
@@ -57,10 +63,10 @@ export default function FeaturedCourses() {
                     href={`/courses/${course.slug}`}
                     className="group block"
                   >
-                    <Card className="overflow-hidden border border-leaf-border  hover:shadow-lg">
+                    <Card className="overflow-hidden border border-leaf-border hover:shadow-lg">
                       <div className="relative aspect-16/10 overflow-hidden bg-leaf-soft">
                         <Image
-                          src={course.thumbnail}
+                          src={course.thumbnail || "/courses/web-development.jpg"}
                           alt={course.title}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"

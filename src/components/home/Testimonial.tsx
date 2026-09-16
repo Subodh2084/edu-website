@@ -1,6 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Quote, Star } from "lucide-react";
-import { testimonials } from "@/data/testimonials";
 import {
   Carousel,
   CarouselContent,
@@ -8,21 +10,23 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { getTestimonials } from "@/lib/queries/testimonials";
+import type { Testimonial } from "@/types/testimonial";
 
 export default function Testimonials() {
-  const featuredTestimonials = testimonials
-    .filter(
-      (testimonial) =>
-        testimonial.is_featured && testimonial.is_active
-    )
-    .sort((a, b) => a.display_order - b.display_order);
+  const [featuredTestimonials, setFeaturedTestimonials] = useState<Testimonial[]>([]);
+
+  useEffect(() => {
+    getTestimonials().then((data) => {
+      setFeaturedTestimonials(data);
+    });
+  }, []);
 
   if (!featuredTestimonials.length) return null;
 
   return (
     <section className="bg-leaf-bg py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
-
         {/* Section Heading */}
         <div className="max-w-2xl text-left">
           <span className="text-sm font-semibold uppercase tracking-[0.2em] text-leaf-green-dark">
@@ -59,12 +63,11 @@ export default function Testimonials() {
                       />
                     </div>
                     <div className="relative w-full rounded-2xl border border-leaf-border bg-white p-8 pt-14 shadow-sm sm:p-10 sm:pt-14 lg:min-h-[280px]">
-
                       <div className="absolute left-8 top-6 text-leaf-green-dark">
                         <Quote className="size-12" />
                       </div>
 
-                      <p className="text-lg mt-8 leading-8 text-leaf-text sm:text-xl">
+                      <p className="mt-8 text-lg leading-8 text-leaf-text sm:text-xl">
                         “{testimonial.review}”
                       </p>
 
@@ -91,11 +94,10 @@ export default function Testimonials() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-[-30px] text-lg border-leaf-border text-leaf-navy hover:bg-leaf-soft" />
-            <CarouselNext className="right-[-30px] text-lg border-leaf-border text-leaf-navy hover:bg-leaf-soft" />
+            <CarouselPrevious className="left-[-30px] border-leaf-border text-lg text-leaf-navy hover:bg-leaf-soft" />
+            <CarouselNext className="right-[-30px] border-leaf-border text-lg text-leaf-navy hover:bg-leaf-soft" />
           </Carousel>
         </div>
-
       </div>
     </section>
   );

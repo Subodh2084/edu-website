@@ -1,13 +1,22 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Clock } from "lucide-react";
-import { courses } from "@/data/courses";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { getPopularCourses } from "@/lib/queries/courses";
+import type { Course } from "@/types/course";
 
 export default function PopularCourses() {
-  const popularCourses = courses.filter(
-    (course) => course.popular && course.status === "published",
-  );
+  const [popularCourses, setPopularCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    getPopularCourses().then((data) => {
+      setPopularCourses(data);
+    });
+  }, []);
 
   return (
     <section className="py-20">
@@ -45,7 +54,16 @@ export default function PopularCourses() {
               key={course.id}
               className="group overflow-hidden border-leaf-border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
-              <div className="aspect-[16/10] bg-leaf-soft">
+              <div className="relative aspect-[16/10] overflow-hidden bg-leaf-soft">
+                {course.thumbnail && (
+                  <Image
+                    src={course.thumbnail}
+                    alt={course.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, 300px"
+                  />
+                )}
               </div>
               <CardContent className="p-5">
                 <Badge className="mb-3 bg-leaf-soft text-leaf-navy hover:bg-leaf-soft">
@@ -97,7 +115,7 @@ export default function PopularCourses() {
         </div>
         <Link
           href="/courses"
-          className="hidden items-center gap-2 rounded-md border border-leaf-border px-4 py-2 text-sm font-medium text-leaf-navy transition-colors hover:bg-leaf-soft sm:hidden"
+          className="mt-6 flex items-center justify-center gap-2 rounded-md border border-leaf-border px-4 py-2 text-sm font-medium text-leaf-navy transition-colors hover:bg-leaf-soft sm:hidden"
         >
           View All Courses
           <ArrowRight className="size-4" />
