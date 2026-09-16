@@ -14,24 +14,21 @@ export interface ContactSubmissionPayload {
 export async function submitContactMessage(payload: ContactSubmissionPayload) {
   const supabase = createClient();
   
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("contact_messages")
-    .insert([
-      {
-        name: payload.name,
-        email: payload.email,
-        phone: payload.phone || null,
-        subject: payload.subject || null,
-        message: payload.message,
-        status: "new",
-      },
-    ])
-    .select();
+    .insert({
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone || null,
+      subject: payload.subject || null,
+      message: payload.message,
+      status: "new",
+    });
 
   if (error) {
     console.error("Error submitting contact message:", error);
     throw new Error(error.message || "Failed to send message. Please try again.");
   }
 
-  return data;
+  return true;
 }

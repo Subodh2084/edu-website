@@ -521,6 +521,8 @@ CREATE POLICY "Admin full access site settings" ON public.site_settings FOR ALL 
 -- Contact Messages RLS
 CREATE POLICY "Anyone can submit contact message" ON public.contact_messages FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admin full access contact messages" ON public.contact_messages FOR ALL USING (public.is_admin());
+GRANT ALL ON public.contact_messages TO anon, authenticated, service_role;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
 
 -- Profiles RLS
 CREATE POLICY "Users view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id OR public.is_admin());
