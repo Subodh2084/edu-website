@@ -40,7 +40,7 @@ export default function PopularCourses() {
 
           <Link
             href="/courses"
-            className="hidden items-center gap-2 rounded-md border border-leaf-border px-4 py-2 text-sm font-medium text-leaf-navy transition-colors hover:bg-leaf-soft sm:flex"
+            className="hidden items-center gap-2 rounded-md bg-leaf-green-dark text-white  px-4 py-2 text-sm font-medium sm:flex"
           >
             View All Courses
             <ArrowRight className="size-4" />
