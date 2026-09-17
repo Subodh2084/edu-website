@@ -1,7 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import CourseCard from "@/components/courses/CourseCard";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { courses } from "@/data/courses";
 
 export default function PopularCourses() {
@@ -39,58 +38,7 @@ export default function PopularCourses() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {popularCourses.map((course) => (
-            <Card
-              key={course.id}
-              className="group overflow-hidden border-leaf-border shadow bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="aspect-16/10 bg-leaf-soft">
-              </div>
-              <CardContent className="p-5">
-                <Badge className="mb-3 bg-leaf-soft text-leaf-navy hover:bg-leaf-soft">
-                  {course.level}
-                </Badge>
-                <h3 className="line-clamp-2 text-lg font-semibold text-leaf-navy">
-                  {course.title}
-                </h3>
-                <p className="mt-2 line-clamp-2 text-sm leading-6 text-leaf-muted">
-                  {course.short_description}
-                </p>
-                <div className="mt-4 flex items-center gap-4 text-sm text-leaf-muted">
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="size-4 text-leaf-green-dark" />
-                    {course.duration}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <BookOpen className="size-4 text-leaf-green-dark" />
-                    {course.language}
-                  </span>
-                </div>
-                <div className="mt-5">
-                  {course.discount_price ? (
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-leaf-navy">
-                        NPR {course.discount_price.toLocaleString()}
-                      </span>
-
-                      <span className="text-sm text-leaf-muted line-through">
-                        NPR {course.price.toLocaleString()}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="font-bold text-leaf-navy">
-                      NPR {course.price.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-                <Link
-                  href={`/courses/${course.slug}`}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-leaf-green-dark px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-leaf-green-dark/90"
-                >
-                  View Course
-                  <ArrowRight className="size-4" />
-                </Link>
-              </CardContent>
-            </Card>
+            <CourseCard key={course.id} course={course} />
           ))}
         </div>
         <Link

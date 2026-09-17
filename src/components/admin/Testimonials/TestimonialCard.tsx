@@ -47,7 +47,7 @@ export default function TestimonialCard({
     onDelete
 }: TestimonialCardProps) {
     return (
-        <Card className="border-leaf-border bg-white">
+        <Card className="border-leaf-border shadow-lg bg-white">
             <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">

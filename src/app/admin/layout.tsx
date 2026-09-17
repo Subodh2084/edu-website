@@ -17,7 +17,7 @@ export default function AdminLayout({
       <SidebarInset>
      <AdminHeader />
 
-        <main className="min-h-screen bg-leaf-bg p-6">
+        <main className="min-h-screen p-6">
           {children}
         </main>
       </SidebarInset>

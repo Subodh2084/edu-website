@@ -42,7 +42,7 @@ export default function FAQCard({ faq, onDelete }: FAQCardProps) {
 
   return (
     <>
-      <Card className="border-leaf-border bg-white flex flex-col justify-between">
+      <Card className="border-leaf-border shadow-lg bg-white flex flex-col justify-between">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-2">
             <Badge

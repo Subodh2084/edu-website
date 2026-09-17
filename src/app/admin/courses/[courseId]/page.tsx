@@ -79,7 +79,7 @@ export default async function CourseManagementPage({
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="overview" className="w-full flex flex-col">
+      <Tabs defaultValue="overview" className="w-full flex flex-col shadow-md">
         <TabsList className="w-full overflow-x-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
@@ -90,7 +90,7 @@ export default async function CourseManagementPage({
         </TabsList>
 
         <TabsContent value="overview">
-          <Card>
+          <Card className="shadow-md">
             <CardHeader>
             </CardHeader>
             <CardContent>
