@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -34,7 +34,7 @@ interface CategoryFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category?: Category | null;
-  onSave?: (data: CategoryFormValues) => void;
+  onSave?: (data: CategoryFormValues) => Promise<boolean> | boolean;
 }
 
 export default function CategoryForm({
@@ -43,6 +43,8 @@ export default function CategoryForm({
   category,
   onSave,
 }: CategoryFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -97,11 +99,20 @@ export default function CategoryForm({
     }
   };
 
-  const onSubmitForm = (data: CategoryFormValues) => {
+  const onSubmitForm = async (data: CategoryFormValues) => {
     if (onSave) {
-      onSave(data);
+      setIsSubmitting(true);
+      try {
+        const success = await onSave(data);
+        if (success) {
+          onOpenChange(false);
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      onOpenChange(false);
     }
-    onOpenChange(false);
   };
 
   return (
@@ -209,9 +220,14 @@ export default function CategoryForm({
             </Button>
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="bg-leaf-green-dark text-white hover:bg-leaf-green"
             >
-              {category ? "Save Changes" : "Create Category"}
+              {isSubmitting
+                ? "Saving…"
+                : category
+                ? "Save Changes"
+                : "Create Category"}
             </Button>
           </DialogFooter>
         </form>

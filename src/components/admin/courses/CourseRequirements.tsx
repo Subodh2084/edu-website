@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,30 +54,33 @@ const requirementSchema = z.object({
 
 type RequirementFormValues = z.infer<typeof requirementSchema>;
 
-const initialRequirements = [
-  {
-    id: "1",
-    requirement: "Basic JavaScript knowledge",
-  },
-  {
-    id: "2",
-    requirement: "Basic HTML and CSS knowledge",
-  },
-  {
-    id: "3",
-    requirement: "A computer with internet access",
-  },
-];
+import {
+  deleteCourseRequirement,
+  getCourseRequirements,
+  saveCourseRequirement,
+} from "@/lib/queries/admin";
 
-export default function CourseRequirements() {
-  const [requirements, setRequirements] = useState(
-    initialRequirements,
-  );
+export default function CourseRequirements({ courseId }: { courseId: string }) {
+  const [requirements, setRequirements] = useState<
+    { id: string; requirement: string }[]
+  >([]);
   const [open, setOpen] = useState(false);
   const [editingRequirement, setEditingRequirement] =
     useState<string | null>(null);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const loadRequirements = async () => {
+    const data = await getCourseRequirements(courseId);
+    setRequirements(
+      data.map((item) => ({ id: item.id, requirement: item.requirement })),
+    );
+  };
+
+  useEffect(() => {
+    if (!courseId) return;
+    loadRequirements();
+  }, [courseId]);
 
   const {
     register,
@@ -110,31 +113,18 @@ export default function CourseRequirements() {
     setOpen(true);
   };
 
-  const onSubmit = (data: RequirementFormValues) => {
-    if (editingRequirement) {
-      setRequirements((current) =>
-        current.map((item) =>
-          item.id === editingRequirement
-            ? {
-                ...item,
-                requirement: data.requirement,
-              }
-            : item,
-        ),
-      );
-    } else {
-      setRequirements((current) => [
-        ...current,
-        {
-          id: Date.now().toString(),
-          requirement: data.requirement,
-        },
-      ]);
-    }
+  const onSubmit = async (data: RequirementFormValues) => {
+    const success = await saveCourseRequirement(courseId, {
+      id: editingRequirement || undefined,
+      requirement: data.requirement,
+    });
 
-    reset();
-    setEditingRequirement(null);
-    setOpen(false);
+    if (success) {
+      await loadRequirements();
+      reset();
+      setEditingRequirement(null);
+      setOpen(false);
+    }
   };
 
   return (
@@ -310,15 +300,10 @@ export default function CourseRequirements() {
             </AlertDialogCancel>
 
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 if (!deleteId) return;
-
-                setRequirements((current) =>
-                  current.filter(
-                    (item) => item.id !== deleteId,
-                  ),
-                );
-
+                const success = await deleteCourseRequirement(deleteId);
+                if (success) await loadRequirements();
                 setDeleteId(null);
               }}
               className="bg-red-600 text-white hover:bg-red-700"

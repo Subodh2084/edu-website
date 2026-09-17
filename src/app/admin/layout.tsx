@@ -1,10 +1,5 @@
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminHeader from "@/components/admin/AdminHeader";
+import { Suspense } from "react";
+import AdminShell from "@/components/admin/AdminShell";
 
 export default function AdminLayout({
   children,
@@ -12,15 +7,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <AdminSidebar />
-      <SidebarInset>
-     <AdminHeader />
-
-        <main className="min-h-screen bg-leaf-bg p-6">
-          {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+    <Suspense fallback={null}>
+      <AdminShell>{children}</AdminShell>
+    </Suspense>
   );
 }

@@ -29,7 +29,7 @@ export default function FeaturedCourses() {
   if (!featuredCourses.length) return null;
 
   return (
-    <section className="py-20 sm:py-24">
+    <section id="featured-courses" className="py-20 sm:py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-8">
         <div className="max-w-xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-leaf-green-dark">

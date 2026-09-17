@@ -35,10 +35,12 @@ interface FAQCardProps {
 export default function FAQCard({ faq, onDelete }: FAQCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  // Look up course title if course_id exists
-  const associatedCourse = faq.course_id
-    ? courses.find((c) => c.id === faq.course_id)
-    : null;
+  // Use dynamic course_title if joined, or fallback to static lookup
+  const courseTitle =
+    faq.course_title ||
+    (faq.course_id ? courses.find((c) => c.id === faq.course_id)?.title : null) ||
+    (faq.course_id ? "Associated Course" : "General / All Courses");
+
 
   return (
     <>
@@ -112,9 +114,7 @@ export default function FAQCard({ faq, onDelete }: FAQCardProps) {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-leaf-border/60 text-xs text-leaf-muted">
-            <span>
-              Course: {associatedCourse ? associatedCourse.title : (faq.course_id ? faq.course_id : '""')}
-            </span>
+            <span>Course: {courseTitle}</span>
             <span>Order: {faq.display_order}</span>
           </div>
         </CardContent>

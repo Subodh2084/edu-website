@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 
 import {
   Card,
@@ -14,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -26,8 +28,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { initialFAQs } from "@/data/faqs";
-import { courses } from "@/data/courses";
+import {
+  getFAQById,
+  saveFAQ,
+  getCourseOptions,
+} from "@/lib/queries/admin";
 import type { FAQCategory } from "@/types/faq";
 
 const faqCategories: FAQCategory[] = [
@@ -39,17 +44,28 @@ const faqCategories: FAQCategory[] = [
 ];
 
 const faqSchema = z.object({
-  question: z.string().min(3, "Question must be at least 3 characters"),
-  answer: z.string().min(5, "Answer must be at least 5 characters"),
+  question: z
+    .string()
+    .min(5, "Question must be at least 5 characters"),
+
+  answer: z
+    .string()
+    .min(10, "Answer must be at least 10 characters"),
+
   category: z.enum([
     "General",
     "Course",
     "Enrollment",
     "Payment",
     "Certificate",
-  ]),
+  ] as const),
+
   course_id: z.string().optional(),
-  display_order: z.number().min(0, "Display order cannot be negative"),
+
+  display_order: z
+    .number()
+    .min(0, "Display order must be 0 or greater"),
+
   is_active: z.boolean(),
 });
 
@@ -63,10 +79,9 @@ export default function FAQForm({ faqId }: FAQFormProps) {
   const router = useRouter();
   const isEditing = Boolean(faqId);
 
-  // Look up existing FAQ if editing
-  const existingFAQ = isEditing
-    ? initialFAQs.find((f) => f.id === faqId)
-    : null;
+  const [loadingData, setLoadingData] = useState(isEditing);
+  const [coursesList, setCoursesList] = useState<{ id: string; title: string }[]>([]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -78,40 +93,89 @@ export default function FAQForm({ faqId }: FAQFormProps) {
   } = useForm<FAQFormValues>({
     resolver: zodResolver(faqSchema),
     defaultValues: {
-      question: existingFAQ?.question ?? "",
-      answer: existingFAQ?.answer ?? "",
-      category: existingFAQ?.category ?? "General",
-      course_id: existingFAQ?.course_id ?? "",
-      display_order: existingFAQ?.display_order ?? 0,
-      is_active: existingFAQ?.is_active ?? true,
+      question: "",
+      answer: "",
+      category: "General",
+      course_id: "",
+      display_order: 0,
+      is_active: true,
     },
   });
 
   useEffect(() => {
-    if (existingFAQ) {
-      reset({
-        question: existingFAQ.question,
-        answer: existingFAQ.answer,
-        category: existingFAQ.category,
-        course_id: existingFAQ.course_id ?? "",
-        display_order: existingFAQ.display_order,
-        is_active: existingFAQ.is_active,
-      });
-    }
-  }, [existingFAQ, reset]);
+    let isMounted = true;
 
+    async function init() {
+      try {
+        const courses = await getCourseOptions();
+        if (isMounted) setCoursesList(courses);
+
+        if (faqId) {
+          setLoadingData(true);
+          const existing = await getFAQById(faqId);
+          if (isMounted && existing) {
+            reset({
+              question: existing.question,
+              answer: existing.answer,
+              category: existing.category,
+              course_id: existing.course_id ?? "",
+              display_order: existing.display_order ?? 0,
+              is_active: existing.is_active ?? true,
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error initializing FAQ form:", err);
+      } finally {
+        if (isMounted) setLoadingData(false);
+      }
+    }
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [faqId, reset]);
+
+  const isActive = watch("is_active");
   const currentCategory = watch("category");
   const currentCourseId = watch("course_id");
-  const isActive = watch("is_active");
 
-  const onSubmit = (data: FAQFormValues) => {
-    const payload = {
-      ...data,
-      course_id: data.course_id ? data.course_id : null,
-    };
-    console.log("FAQ submit:", payload);
-    router.push("/admin/faqs");
+  const onSubmit = async (data: FAQFormValues) => {
+    setSubmitError(null);
+    try {
+      const res = await saveFAQ({
+        id: faqId,
+        question: data.question,
+        answer: data.answer,
+        category: data.category,
+        course_id: data.course_id || null,
+        display_order: data.display_order,
+        is_active: data.is_active,
+      });
+
+      if (!res.success) {
+        setSubmitError(res.error || "Failed to save FAQ.");
+        return;
+      }
+
+      router.push("/admin/faqs");
+      router.refresh();
+    } catch (err: any) {
+      console.error("Error submitting FAQ:", err);
+      setSubmitError(err.message || "An unexpected error occurred.");
+    }
   };
+
+  if (loadingData) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-leaf-muted gap-3">
+        <Loader2 className="size-8 animate-spin text-leaf-green-dark" />
+        <p className="text-sm">Loading FAQ details...</p>
+      </div>
+    );
+  }
 
   return (
     <Card className="border-leaf-border bg-white">
@@ -121,12 +185,18 @@ export default function FAQForm({ faqId }: FAQFormProps) {
         </CardTitle>
         <CardDescription className="text-leaf-muted">
           {isEditing
-            ? "Update the details of the frequently asked question."
+            ? "Update the details for this frequently asked question."
             : "Fill in the details below to add a new FAQ for your website."}
         </CardDescription>
       </CardHeader>
 
       <CardContent>
+        {submitError && (
+          <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200">
+            {submitError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Question */}
           <div className="space-y-2">
@@ -135,13 +205,11 @@ export default function FAQForm({ faqId }: FAQFormProps) {
             </label>
             <Input
               {...register("question")}
-              placeholder="e.g. What is LeafClutch?"
+              placeholder="e.g. Will I receive a certificate upon completion?"
               className="border-leaf-border"
             />
             {errors.question && (
-              <p className="text-xs text-red-600 font-medium">
-                {errors.question.message}
-              </p>
+              <p className="text-xs text-red-600">{errors.question.message}</p>
             )}
           </div>
 
@@ -152,18 +220,16 @@ export default function FAQForm({ faqId }: FAQFormProps) {
             </label>
             <Textarea
               {...register("answer")}
-              placeholder="Write the detailed answer here..."
-              rows={5}
+              placeholder="Provide a clear, helpful answer..."
+              rows={4}
               className="border-leaf-border"
             />
             {errors.answer && (
-              <p className="text-xs text-red-600 font-medium">
-                {errors.answer.message}
-              </p>
+              <p className="text-xs text-red-600">{errors.answer.message}</p>
             )}
           </div>
 
-          {/* Category & Course */}
+          {/* Category & Associated Course */}
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-leaf-muted">
@@ -186,11 +252,6 @@ export default function FAQForm({ faqId }: FAQFormProps) {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.category && (
-                <p className="text-xs text-red-600 font-medium">
-                  {errors.category.message}
-                </p>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -204,11 +265,11 @@ export default function FAQForm({ faqId }: FAQFormProps) {
                 }
               >
                 <SelectTrigger className="w-full border-leaf-border bg-white">
-                  <SelectValue placeholder="Select Course" />
+                  <SelectValue placeholder="General / All Courses" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
-                  <SelectItem value="none">None / General</SelectItem>
-                  {courses.map((course) => (
+                  <SelectItem value="none">General / All Courses</SelectItem>
+                  {coursesList.map((course) => (
                     <SelectItem key={course.id} value={course.id}>
                       {course.title}
                     </SelectItem>
@@ -230,36 +291,30 @@ export default function FAQForm({ faqId }: FAQFormProps) {
               className="border-leaf-border"
             />
             {errors.display_order && (
-              <p className="text-xs text-red-600 font-medium">
+              <p className="text-xs text-red-600">
                 {errors.display_order.message}
               </p>
             )}
           </div>
 
-          {/* Active Checkbox (Using Checkbox component as requested) */}
+          {/* Active Status Toggle */}
           <div className="flex items-start gap-3 rounded-lg border border-leaf-border bg-white p-4">
             <Checkbox
-              id="is_active_checkbox"
               checked={isActive}
               onCheckedChange={(checked) =>
                 setValue("is_active", checked === true)
               }
-              className="mt-0.5"
             />
+
             <div>
-              <label
-                htmlFor="is_active_checkbox"
-                className="text-sm font-medium text-leaf-navy cursor-pointer"
-              >
-                Active
-              </label>
+              <p className="text-sm font-medium text-leaf-navy">Active</p>
               <p className="text-xs text-leaf-muted">
                 Show this FAQ on the website.
               </p>
             </div>
           </div>
 
-          {/* Form Actions */}
+          {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4 border-t border-leaf-border">
             <Link
               href="/admin/faqs"
@@ -271,8 +326,9 @@ export default function FAQForm({ faqId }: FAQFormProps) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-leaf-green-dark text-white hover:bg-leaf-green"
+              className="bg-leaf-green-dark text-white hover:bg-leaf-green flex items-center gap-2"
             >
+              {isSubmitting && <Loader2 className="size-4 animate-spin" />}
               {isEditing ? "Update FAQ" : "Save FAQ"}
             </Button>
           </div>

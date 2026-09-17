@@ -11,6 +11,7 @@ export interface FAQ {
   answer: string;
   category: FAQCategory;
   course_id: string | null;
+  course_title?: string | null;
   display_order: number;
   is_active: boolean;
   created_at: string;

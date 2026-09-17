@@ -19,7 +19,7 @@ export default function PopularCourses() {
   }, []);
 
   return (
-    <section className="py-20">
+    <section id="popular-courses" className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-10 flex items-end justify-between gap-6">

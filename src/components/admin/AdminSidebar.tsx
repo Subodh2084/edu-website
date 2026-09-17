@@ -7,10 +7,8 @@ import {
   LayoutDashboard,
   BookOpen,
   Folder,
-  Users,
   MessageSquare,
   HelpCircle,
-  UserRound,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -22,7 +20,9 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { adminLogout } from "@/actions/auth";
 
 const links = [
   {
@@ -64,6 +64,15 @@ const links = [
 
 export default function AdminSidebar() {
   const path = usePathname();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    await adminLogout();
+    router.push("/admin/login");
+    router.refresh();
+  }
 
   return (
     <Sidebar className="bg-leaf-navy text-white">
@@ -109,10 +118,12 @@ export default function AdminSidebar() {
         <div className="mt-auto p-4">
           <Button
             variant="ghost"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
             className="w-full justify-start gap-3 text-white"
           >
             <LogOut className="size-4 text-red-400" />
-            Logout
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </Button>
         </div>
       </SidebarContent>

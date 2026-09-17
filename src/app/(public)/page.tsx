@@ -4,6 +4,7 @@ import Hero from "@/components/home/HeroSection";
 import PopularCourses from "@/components/home/PopularCourses";
 import Testimonials from "@/components/home/Testimonial";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
+import FAQSection from "@/components/home/FAQSection";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,8 +16,9 @@ export default function Home() {
       <FeaturedCourses />
       <WhyChooseUs />
       <PopularCourses />
-      <CTA />
       <Testimonials />
+      <FAQSection />
+      <CTA />
     </>
   );
 }

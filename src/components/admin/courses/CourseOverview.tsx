@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 
@@ -7,34 +10,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getCourseById, type AdminCourseItem } from "@/lib/queries/admin";
 
 interface CourseOverviewProps {
   courseId: string;
 }
 
-const course = {
-  title: "React Development",
-  category: "Web Development",
-  level: "Intermediate",
-  duration: "3 Months",
-  language: "English",
-  price: 15000,
-  discount_price: 12000,
-  short_description:
-    "Learn React from fundamentals to building production-ready applications.",
-  description:
-    "A complete React development course covering components, hooks, state management, routing, API integration, and modern frontend development.",
-  preview_video_url: "https://youtube.com/example",
-};
+export default function CourseOverview({ courseId }: CourseOverviewProps) {
+  const [course, setCourse] = useState<AdminCourseItem | null>(null);
 
-export default function CourseOverview({courseId}:CourseOverviewProps) {
+  useEffect(() => {
+    getCourseById(courseId).then(setCourse);
+  }, [courseId]);
+
+  if (!course) {
+    return <p className="text-sm text-leaf-muted">Loading course overview...</p>;
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="text-leaf-navy">
           Course Overview
         </CardTitle>
-        <Link className='flex items-center gap-2 text-white bg-leaf-green-dark rounded px-3 py-1 font-bold' href={`/admin/courses/${courseId}/edit`}>
+        <Link className="flex items-center gap-2 text-white bg-leaf-green-dark rounded px-3 py-1 font-bold" href={`/admin/courses/${courseId}/edit`}>
          <Pencil size={10}/> Course
       </Link>
       </CardHeader>
@@ -43,13 +42,13 @@ export default function CourseOverview({courseId}:CourseOverviewProps) {
           <div>
             <p className="text-sm text-leaf-muted">Category</p>
             <p className="mt-1 font-medium text-leaf-navy">
-              {course.category}
+              {course.category_name || "Uncategorized"}
             </p>
           </div>
 
           <div>
             <p className="text-sm text-leaf-muted">Level</p>
-            <p className="mt-1 font-medium text-leaf-navy">
+            <p className="mt-1 font-medium text-leaf-navy capitalize">
               {course.level}
             </p>
           </div>
@@ -57,14 +56,14 @@ export default function CourseOverview({courseId}:CourseOverviewProps) {
           <div>
             <p className="text-sm text-leaf-muted">Duration</p>
             <p className="mt-1 font-medium text-leaf-navy">
-              {course.duration}
+              {course.duration || "-"}
             </p>
           </div>
 
           <div>
             <p className="text-sm text-leaf-muted">Language</p>
             <p className="mt-1 font-medium text-leaf-navy">
-              {course.language}
+              {course.language || "-"}
             </p>
           </div>
         </div>
@@ -76,13 +75,15 @@ export default function CourseOverview({courseId}:CourseOverviewProps) {
             <div>
               <p className="text-sm text-leaf-muted">Price</p>
               <p className="mt-1 font-medium text-leaf-navy">
-                NPR {course.price.toLocaleString()}
+                NPR {Number(course.price || 0).toLocaleString()}
               </p>
             </div>
             <div>
               <p className="text-sm text-leaf-muted">Discount Price</p>
               <p className="mt-1 font-medium text-leaf-green-dark">
-                NPR {course.discount_price.toLocaleString()}
+                {course.discount_price
+                  ? `NPR ${Number(course.discount_price).toLocaleString()}`
+                  : "-"}
               </p>
             </div>
           </div>
@@ -93,7 +94,7 @@ export default function CourseOverview({courseId}:CourseOverviewProps) {
           </h3>
 
           <p className="mt-2 text-sm leading-6 text-leaf-text">
-            {course.short_description}
+            {course.short_description || "-"}
           </p>
         </div>
         <div>
@@ -102,7 +103,7 @@ export default function CourseOverview({courseId}:CourseOverviewProps) {
           </h3>
 
           <p className="mt-2 text-sm leading-6 text-leaf-text">
-            {course.description}
+            {course.description || "-"}
           </p>
         </div>
         <div className="border-t border-leaf-border pt-6">
@@ -111,7 +112,7 @@ export default function CourseOverview({courseId}:CourseOverviewProps) {
           </h3>
 
           <p className="mt-2 break-all text-sm text-leaf-muted">
-            {course.preview_video_url}
+            {course.preview_video_url || "-"}
           </p>
         </div>
       </CardContent>
