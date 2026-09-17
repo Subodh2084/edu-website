@@ -51,7 +51,7 @@ export default function Testimonials() {
                   <div className="flex flex-col items-center gap-8 lg:flex-row lg:gap-10">
                     <div className="relative z-10 size-56 shrink-0 overflow-hidden rounded-3xl border-8 border-white shadow-lg sm:size-64 lg:size-72">
                       <Image
-                        src={testimonial.profile_image}
+                        src={testimonial.profile_image || "/placeholder.png"}
                         alt={testimonial.student_name}
                         fill
                         className="object-cover"
