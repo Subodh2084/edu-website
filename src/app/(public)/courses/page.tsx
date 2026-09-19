@@ -1,5 +1,5 @@
 import CourseCard from "@/components/courses/CourseCard";
-import CourseHero from "@/components/courses/CourseHeader";
+import CourseHero from "@/components/courses/CourseHeaderHome";
 import { courses } from "@/data/courses";
 
 export default function CoursesPage() {

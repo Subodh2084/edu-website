@@ -1,5 +1,19 @@
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
+
 export type CourseStatus = "draft" | "published" | "archived";
+
+export interface Lesson {
+  id: string;
+  title: string;
+  duration: string;
+  description?: string;
+}
+
+export interface Section {
+  id: string;
+  title: string;
+  lessons: Lesson[];
+}
 
 export interface Course {
   id: string;
@@ -10,6 +24,7 @@ export interface Course {
   description: string;
   thumbnail: string;
   preview_video_url: string | null;
+  outcomes: string[];
   price: number;
   discount_price: number | null;
   level: CourseLevel;
@@ -18,4 +33,5 @@ export interface Course {
   featured: boolean;
   popular: boolean;
   status: CourseStatus;
+  sections: Section[];
 }
