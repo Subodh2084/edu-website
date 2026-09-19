@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,35 +48,36 @@ const projectSchema = z.object({
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
-const initialProjects = [
-  {
-    id: "1",
-    title: "E-Commerce Website",
-    description:
-      "Build a modern e-commerce website with product browsing, cart functionality, and a responsive user interface.",
-    technologies: ["React", "TypeScript", "Tailwind CSS"],
-  },
-  {
-    id: "2",
-    title: "Task Management App",
-    description:
-      "Create a task management application where users can organize, manage, and track their daily tasks.",
-    technologies: ["Next.js", "TypeScript", "Supabase"],
-  },
-  {
-    id: "3",
-    title: "Portfolio Website",
-    description:
-      "Design and develop a professional portfolio website to showcase projects, skills, and professional experience.",
-    technologies: ["Next.js", "Tailwind CSS", "TypeScript"],
-  },
-];
+import {
+  deleteCourseProject,
+  getCourseProjects,
+  saveCourseProject,
+} from "@/lib/queries/admin";
 
-export default function CourseProjects() {
-  const [projects, setProjects] = useState(initialProjects);
+export default function CourseProjects({ courseId }: { courseId: string }) {
+  const [projects, setProjects] = useState<
+    { id: string; title: string; description: string; technologies: string[] }[]
+  >([]);
   const [open, setOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const loadProjects = async () => {
+    const data = await getCourseProjects(courseId);
+    setProjects(
+      data.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description || "",
+        technologies: item.technologies || [],
+      })),
+    );
+  };
+
+  useEffect(() => {
+    if (!courseId) return;
+    loadProjects();
+  }, [courseId]);
 
   const {
     register,
@@ -119,40 +120,25 @@ export default function CourseProjects() {
     setOpen(true);
   };
 
-  const onSubmit = (data: ProjectFormValues) => {
+  const onSubmit = async (data: ProjectFormValues) => {
     const technologies = data.technologies
       .split(",")
       .map((technology) => technology.trim())
       .filter(Boolean);
 
-    if (editingProject) {
-      setProjects((current) =>
-        current.map((item) =>
-          item.id === editingProject
-            ? {
-                ...item,
-                title: data.title,
-                description: data.description,
-                technologies,
-              }
-            : item,
-        ),
-      );
-    } else {
-      setProjects((current) => [
-        ...current,
-        {
-          id: Date.now().toString(),
-          title: data.title,
-          description: data.description,
-          technologies,
-        },
-      ]);
-    }
+    const success = await saveCourseProject(courseId, {
+      id: editingProject || undefined,
+      title: data.title,
+      description: data.description,
+      technologies,
+    });
 
-    reset();
-    setEditingProject(null);
-    setOpen(false);
+    if (success) {
+      await loadProjects();
+      reset();
+      setEditingProject(null);
+      setOpen(false);
+    }
   };
 
   return (
@@ -384,13 +370,10 @@ export default function CourseProjects() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
 
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 if (!deleteId) return;
-
-                setProjects((current) =>
-                  current.filter((item) => item.id !== deleteId),
-                );
-
+                const success = await deleteCourseProject(deleteId);
+                if (success) await loadProjects();
                 setDeleteId(null);
               }}
               className="bg-red-600 text-white hover:bg-red-700"

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,30 +43,27 @@ const outcomeSchema = z.object({
 
 type OutcomeFormValues = z.infer<typeof outcomeSchema>;
 
-const initialOutcomes = [
-  {
-    id: "1",
-    outcome: "Understand React fundamentals",
-  },
-  {
-    id: "2",
-    outcome: "Build reusable React components",
-  },
-  {
-    id: "3",
-    outcome: "Manage application state",
-  },
-  {
-    id: "4",
-    outcome: "Build production-ready applications",
-  },
-];
+import {
+  deleteCourseOutcome,
+  getCourseOutcomes,
+  saveCourseOutcome,
+} from "@/lib/queries/admin";
 
-export default function CourseOutcomes() {
-  const [outcomes, setOutcomes] = useState(initialOutcomes);
+export default function CourseOutcomes({ courseId }: { courseId: string }) {
+  const [outcomes, setOutcomes] = useState<{ id: string; outcome: string }[]>([]);
   const [open, setOpen] = useState(false);
   const [editingOutcome, setEditingOutcome] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const loadOutcomes = async () => {
+    const data = await getCourseOutcomes(courseId);
+    setOutcomes(data.map((item) => ({ id: item.id, outcome: item.outcome })));
+  };
+
+  useEffect(() => {
+    if (!courseId) return;
+    loadOutcomes();
+  }, [courseId]);
 
   const {
     register,
@@ -97,32 +94,23 @@ export default function CourseOutcomes() {
     setOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setOutcomes((current) => current.filter((item) => item.id !== id));
+  const handleDelete = async (id: string) => {
+    const success = await deleteCourseOutcome(id);
+    if (success) await loadOutcomes();
   };
 
-  const onSubmit = (data: OutcomeFormValues) => {
-    if (editingOutcome) {
-      setOutcomes((current) =>
-        current.map((item) =>
-          item.id === editingOutcome
-            ? { ...item, outcome: data.outcome }
-            : item,
-        ),
-      );
-    } else {
-      setOutcomes((current) => [
-        ...current,
-        {
-          id: Date.now().toString(),
-          outcome: data.outcome,
-        },
-      ]);
-    }
+  const onSubmit = async (data: OutcomeFormValues) => {
+    const success = await saveCourseOutcome(courseId, {
+      id: editingOutcome || undefined,
+      outcome: data.outcome,
+    });
 
-    reset();
-    setEditingOutcome(null);
-    setOpen(false);
+    if (success) {
+      await loadOutcomes();
+      reset();
+      setEditingOutcome(null);
+      setOpen(false);
+    }
   };
 
   return (
@@ -279,13 +267,9 @@ export default function CourseOutcomes() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
 
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 if (!deleteId) return;
-
-                setOutcomes((current) =>
-                  current.filter((item) => item.id !== deleteId),
-                );
-
+                await handleDelete(deleteId);
                 setDeleteId(null);
               }}
               className="bg-red-600 text-white hover:bg-red-700"

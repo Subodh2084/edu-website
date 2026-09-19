@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 import { initialSiteSettings } from "@/data/site-settings";
+import { getSiteSettings, saveSiteSettings } from "@/lib/queries/admin";
 import type { SiteSettings } from "@/types/site-settings";
 
 const urlOrEmpty = z
@@ -75,6 +76,7 @@ export default function SiteSettingsForm({
     initialData.favicon
   );
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -101,6 +103,36 @@ export default function SiteSettingsForm({
     },
   });
 
+  // Fetch live settings on mount to ensure form reflects database
+  useEffect(() => {
+    let isMounted = true;
+    getSiteSettings().then((data) => {
+      if (data && isMounted) {
+        reset({
+          company_name: data.company_name || initialSiteSettings.company_name,
+          email: data.email ?? "",
+          phone: data.phone ?? "",
+          whatsapp: data.whatsapp ?? "",
+          address: data.address ?? "",
+          office_hours: data.office_hours ?? "",
+          facebook_url: data.social_media_links?.facebook ?? "",
+          instagram_url: data.social_media_links?.instagram ?? "",
+          linkedin_url: data.social_media_links?.linkedin ?? "",
+          github_url: data.social_media_links?.github ?? "",
+          youtube_url: data.social_media_links?.youtube ?? "",
+          google_maps_url: data.google_maps_url ?? "",
+          footer_description: data.footer_description ?? "",
+          copyright_text: data.copyright_text ?? "",
+        });
+        if (data.logo) setLogoPreview(data.logo);
+        if (data.favicon) setFaviconPreview(data.favicon);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [reset]);
+
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -115,32 +147,42 @@ export default function SiteSettingsForm({
     }
   };
 
-  const onSubmit = (data: SiteSettingsFormValues) => {
-    const payload: Partial<SiteSettings> = {
-      company_name: data.company_name,
-      logo: logoPreview,
-      favicon: faviconPreview,
-      email: data.email || null,
-      phone: data.phone || null,
-      whatsapp: data.whatsapp || null,
-      address: data.address || null,
-      office_hours: data.office_hours || null,
-      social_media_links: {
-        facebook: data.facebook_url || "",
-        instagram: data.instagram_url || "",
-        linkedin: data.linkedin_url || "",
-        github: data.github_url || "",
-        youtube: data.youtube_url || "",
-      },
-      google_maps_url: data.google_maps_url || null,
-      footer_description: data.footer_description || null,
-      copyright_text: data.copyright_text || null,
-      updated_at: new Date().toISOString(),
-    };
+  const onSubmit = async (data: SiteSettingsFormValues) => {
+    setErrorMessage(null);
+    try {
+      const payload: Partial<SiteSettings> = {
+        company_name: data.company_name,
+        logo: logoPreview,
+        favicon: faviconPreview,
+        email: data.email || null,
+        phone: data.phone || null,
+        whatsapp: data.whatsapp || null,
+        address: data.address || null,
+        office_hours: data.office_hours || null,
+        social_media_links: {
+          facebook: data.facebook_url || "",
+          instagram: data.instagram_url || "",
+          linkedin: data.linkedin_url || "",
+          github: data.github_url || "",
+          youtube: data.youtube_url || "",
+        },
+        google_maps_url: data.google_maps_url || null,
+        footer_description: data.footer_description || null,
+        copyright_text: data.copyright_text || null,
+        updated_at: new Date().toISOString(),
+      };
 
-    console.log("Site Settings saved:", payload);
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 4000);
+      const success = await saveSiteSettings(payload);
+      if (success) {
+        setIsSubmitted(true);
+        setTimeout(() => setIsSubmitted(false), 4000);
+      } else {
+        setErrorMessage("Failed to save site settings. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error saving site settings:", err);
+      setErrorMessage("An unexpected error occurred while saving.");
+    }
   };
 
   return (
@@ -148,6 +190,11 @@ export default function SiteSettingsForm({
       {isSubmitted && (
         <div className="rounded-lg border border-leaf-border bg-leaf-soft p-4 text-sm font-medium text-leaf-green-dark">
           Site settings saved successfully!
+        </div>
+      )}
+      {errorMessage && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600">
+          {errorMessage}
         </div>
       )}
 
@@ -516,7 +563,7 @@ export default function SiteSettingsForm({
           disabled={isSubmitting}
           className="bg-leaf-green-dark text-white hover:bg-leaf-green"
         >
-          Save Changes
+          {isSubmitting ? "Saving..." : "Save Changes"}
         </Button>
       </div>
     </form>

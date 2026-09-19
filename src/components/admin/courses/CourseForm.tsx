@@ -24,8 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getCategories, getCourseById, saveCourse } from "@/lib/queries/admin";
+import type { Category } from "@/types/category";
 
 const courseSchema = z.object({
   title: z.string().min(3, "Course title must be at least 3 characters"),
@@ -84,29 +85,14 @@ interface CourseFormProps {
   courseId?: string;
 }
 
-const mockCourse = {
-  id: "1",
-  title: "React Development",
-  short_description:
-    "Learn React from fundamentals to building production-ready applications.",
-  description:
-    "A complete React development course covering components, hooks, state management, routing, API integration, and modern frontend development.",
-  category_id: "web-development",
-  preview_video_url: "https://youtube.com/example",
-  price: 15000,
-  discount_price: 12000,
-  level: "intermediate" as const,
-  duration: "3 Months",
-  language: "English",
-  status: "published" as const,
-  featured: true,
-  popular: true,
-};
-
 export default function CourseForm({
   courseId,
 }: CourseFormProps) {
+  const router = useRouter();
   const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const {
     register,
@@ -136,11 +122,32 @@ export default function CourseForm({
   });
 
   useEffect(() => {
+    getCategories().then(setCategories);
+  }, []);
+
+  useEffect(() => {
     if (!courseId) return;
 
-    if (courseId === mockCourse.id) {
-      reset(mockCourse);
-    }
+    getCourseById(courseId).then((course) => {
+      if (!course) return;
+
+      reset({
+        title: course.title,
+        short_description: course.short_description || "",
+        description: course.description || "",
+        category_id: course.category_id || "",
+        preview_video_url: course.preview_video_url || "",
+        price: course.price || 0,
+        discount_price: course.discount_price ?? undefined,
+        level: course.level,
+        duration: course.duration || "",
+        language: course.language || "English",
+        status: course.status,
+        featured: course.featured ?? false,
+        popular: course.popular ?? false,
+      });
+      setThumbnail(course.thumbnail || null);
+    });
   }, [courseId, reset]);
 
   const handleThumbnailChange = (
@@ -153,14 +160,38 @@ export default function CourseForm({
     setThumbnail(URL.createObjectURL(file));
   };
 
-  const onSubmit = (data: CourseFormValues) => {
-    if (courseId) {
-      console.log("Updating course:", courseId);
-      console.log(data);
+  const onSubmit = async (data: CourseFormValues) => {
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    const { data: saved, error } = await saveCourse({
+      id: courseId,
+      title: data.title,
+      short_description: data.short_description,
+      description: data.description,
+      category_id: data.category_id,
+      preview_video_url: data.preview_video_url || null,
+      price: Number(data.price) || 0,
+      discount_price: data.discount_price ? Number(data.discount_price) : null,
+      level: data.level,
+      duration: data.duration,
+      language: data.language,
+      status: data.status,
+      featured: data.featured,
+      popular: data.popular,
+      thumbnail:
+        thumbnail && !thumbnail.startsWith("blob:") ? thumbnail : undefined,
+    });
+
+    setIsSaving(false);
+
+    if (!saved) {
+      setErrorMessage(error || "Failed to save course. Please try again.");
       return;
     }
 
-    console.log("Creating course:", data);
+    router.push("/admin/courses");
+    router.refresh();
   };
 
   return (
@@ -174,6 +205,12 @@ export default function CourseForm({
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-6"
         >
+          {errorMessage && (
+            <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {errorMessage}
+            </p>
+          )}
+
           {/* Title */}
 
           <div className="space-y-2">
@@ -257,17 +294,11 @@ export default function CourseForm({
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="web-development">
-                    Web Development
-                  </SelectItem>
-
-                  <SelectItem value="design">
-                    UI/UX Design
-                  </SelectItem>
-
-                  <SelectItem value="programming">
-                    Programming
-                  </SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -521,9 +552,14 @@ export default function CourseForm({
 
           <Button
             type="submit"
+            disabled={isSaving}
             className="bg-leaf-green-dark text-white hover:bg-leaf-green-dark/80 hover:text-white px-4 py-2 rounded"
           >
-            {courseId ? "Update Course" : "Create Course"}
+            {isSaving
+              ? "Saving..."
+              : courseId
+                ? "Update Course"
+                : "Create Course"}
           </Button>
         </form>
       </CardContent>

@@ -1,15 +1,24 @@
-import CourseCard from "@/components/courses/CourseCard";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { courses } from "@/data/courses";
+
+import CourseCard from "@/components/courses/CourseCard";
+import { getPopularCourses } from "@/lib/queries/courses";
+import type { Course } from "@/types/course";
 
 export default function PopularCourses() {
-  const popularCourses = courses.filter(
-    (course) => course.popular && course.status === "published",
-  );
+  const [popularCourses, setPopularCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    getPopularCourses().then((data) => {
+      setPopularCourses(data);
+    });
+  }, []);
 
   return (
-    <section className="py-20">
+    <section id="popular-courses" className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-10 flex items-end justify-between gap-6">
@@ -30,20 +39,24 @@ export default function PopularCourses() {
 
           <Link
             href="/courses"
-            className="hidden items-center gap-2 rounded-md bg-leaf-green-dark text-white  px-4 py-2 text-sm font-medium sm:flex"
+            className="hidden items-center gap-2 rounded-md bg-leaf-green-dark px-4 py-2 text-sm font-medium text-white sm:flex"
           >
             View All Courses
             <ArrowRight className="size-4" />
           </Link>
         </div>
+
+        {/* Courses */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {popularCourses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
         </div>
+
+        {/* Mobile CTA */}
         <Link
           href="/courses"
-          className="hidden items-center gap-2 rounded-md border border-leaf-border px-4 py-2 text-sm font-medium text-leaf-navy transition-colors hover:bg-leaf-soft sm:hidden"
+          className="mt-6 flex items-center justify-center gap-2 rounded-md border border-leaf-border px-4 py-2 text-sm font-medium text-leaf-navy transition-colors hover:bg-leaf-soft sm:hidden"
         >
           View All Courses
           <ArrowRight className="size-4" />

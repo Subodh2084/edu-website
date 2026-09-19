@@ -1,6 +1,5 @@
-
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,25 +54,28 @@ const audienceSchema = z.object({
 
 type AudienceFormValues = z.infer<typeof audienceSchema>;
 
-const initialAudience = [
-  {
-    id: "1",
-    description:
-      "This course is designed for beginners, students, and aspiring frontend developers who want to learn modern web development.",
-  },
-  {
-    id: "2",
-    description:
-      "Students who want to build practical projects and develop the skills required for a career in frontend development.",
-  },
-];
+import {
+  deleteCourseAudience,
+  getCourseAudience,
+  saveCourseAudience,
+} from "@/lib/queries/admin";
 
-export default function CourseAudience() {
-  const [audience, setAudience] = useState(initialAudience);
+export default function CourseAudience({ courseId }: { courseId: string }) {
+  const [audience, setAudience] = useState<{ id: string; description: string }[]>([]);
   const [open, setOpen] = useState(false);
   const [editingAudience, setEditingAudience] =
     useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const loadAudience = async () => {
+    const data = await getCourseAudience(courseId);
+    setAudience(data.map((item) => ({ id: item.id, description: item.description })));
+  };
+
+  useEffect(() => {
+    if (!courseId) return;
+    loadAudience();
+  }, [courseId]);
 
   const {
     register,
@@ -106,31 +108,18 @@ export default function CourseAudience() {
     setOpen(true);
   };
 
-  const onSubmit = (data: AudienceFormValues) => {
-    if (editingAudience) {
-      setAudience((current) =>
-        current.map((item) =>
-          item.id === editingAudience
-            ? {
-                ...item,
-                description: data.description,
-              }
-            : item,
-        ),
-      );
-    } else {
-      setAudience((current) => [
-        ...current,
-        {
-          id: Date.now().toString(),
-          description: data.description,
-        },
-      ]);
-    }
+  const onSubmit = async (data: AudienceFormValues) => {
+    const success = await saveCourseAudience(courseId, {
+      id: editingAudience || undefined,
+      description: data.description,
+    });
 
-    reset();
-    setEditingAudience(null);
-    setOpen(false);
+    if (success) {
+      await loadAudience();
+      reset();
+      setEditingAudience(null);
+      setOpen(false);
+    }
   };
 
   return (
@@ -312,15 +301,10 @@ export default function CourseAudience() {
             </AlertDialogCancel>
 
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 if (!deleteId) return;
-
-                setAudience((current) =>
-                  current.filter(
-                    (item) => item.id !== deleteId,
-                  ),
-                );
-
+                const success = await deleteCourseAudience(deleteId);
+                if (success) await loadAudience();
                 setDeleteId(null);
               }}
               className="bg-red-600 text-white hover:bg-red-700"

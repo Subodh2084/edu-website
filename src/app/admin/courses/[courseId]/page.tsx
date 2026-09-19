@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -12,33 +16,41 @@ import CourseRequirements from "@/components/admin/courses/CourseRequirements";
 import CourseAudience from "@/components/admin/courses/CourseAudience";
 import CourseProjects from "@/components/admin/courses/CourseProjects";
 import CourseCurriculum from "@/components/admin/courses/CourseCurriculam";
+import { getCourseById, type AdminCourseItem } from "@/lib/queries/admin";
 
-export default async function CourseManagementPage({
-  params,
-}: {
-  params: Promise<{ courseId: string }>;
-}) {
-  const { courseId } = await params;
+export default function CourseManagementPage() {
+  const params = useParams<{ courseId: string }>();
+  const courseId = params.courseId;
+  const [course, setCourse] = useState<AdminCourseItem | null>(null);
+
+  useEffect(() => {
+    if (!courseId) return;
+    getCourseById(courseId).then(setCourse);
+  }, [courseId]);
 
   return (
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-leaf-navy">
-            React Development
+            {course?.title || "Course"}
           </h1>
 
-          <Badge className="bg-leaf-soft text-leaf-green-dark hover:bg-leaf-soft">
-            Published
-          </Badge>
+          {course?.status && (
+            <Badge
+              className={
+                course.status === "published"
+                  ? "bg-leaf-soft text-leaf-green-dark hover:bg-leaf-soft"
+                  : "bg-yellow-50 text-yellow-700 hover:bg-yellow-50"
+              }
+            >
+              {course.status}
+            </Badge>
+          )}
         </div>
 
         <p className="mt-1 text-sm text-leaf-muted">
           Manage course content, curriculum, instructors and reviews.
-        </p>
-
-        <p className="mt-1 text-xs text-leaf-muted">
-          Course ID: {courseId}
         </p>
       </div>
       <Card>
@@ -50,29 +62,29 @@ export default async function CourseManagementPage({
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <p className="text-sm text-leaf-muted">Level</p>
-              <p className="font-medium text-leaf-navy">
-                Intermediate
+              <p className="font-medium text-leaf-navy capitalize">
+                {course?.level || "-"}
               </p>
             </div>
 
             <div>
               <p className="text-sm text-leaf-muted">Duration</p>
               <p className="font-medium text-leaf-navy">
-                3 Months
+                {course?.duration || "-"}
               </p>
             </div>
 
             <div>
               <p className="text-sm text-leaf-muted">Price</p>
               <p className="font-medium text-leaf-navy">
-                NPR 15,000
+                NPR {Number(course?.price || 0).toLocaleString()}
               </p>
             </div>
 
             <div>
               <p className="text-sm text-leaf-muted">Language</p>
               <p className="font-medium text-leaf-navy">
-                English
+                {course?.language || "-"}
               </p>
             </div>
           </div>
@@ -106,7 +118,7 @@ export default async function CourseManagementPage({
             </CardHeader>
 
             <CardContent>
-              <CourseCurriculum/>
+              <CourseCurriculum courseId={courseId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -118,7 +130,7 @@ export default async function CourseManagementPage({
             </CardHeader>
 
             <CardContent>
-               <CourseOutcomes/>
+               <CourseOutcomes courseId={courseId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -130,7 +142,7 @@ export default async function CourseManagementPage({
             </CardHeader>
 
             <CardContent>
-               <CourseRequirements/>
+               <CourseRequirements courseId={courseId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -142,7 +154,7 @@ export default async function CourseManagementPage({
             </CardHeader>
 
             <CardContent>
-               <CourseAudience/>
+               <CourseAudience courseId={courseId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -154,7 +166,7 @@ export default async function CourseManagementPage({
             </CardHeader>
 
             <CardContent>
-                <CourseProjects/>
+                <CourseProjects courseId={courseId} />
             </CardContent>
           </Card>
         </TabsContent>

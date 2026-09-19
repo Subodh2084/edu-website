@@ -1,79 +1,69 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import ContactForm from "@/components/contact/Contact-Form";
 import {
   Clock,
   Mail,
   MapPin,
   Phone,
-  MessageCircle,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-
-const contactInfo = [
-  {
-    icon: Mail,
-    title: "Email Us",
-    content: (
-      <>
-        <a
-          href="mailto:info@leafclutchtech.com.np"
-          className="transition-colors hover:text-leaf-green-dark"
-        >
-          info@leafclutchtech.com.np
-        </a>
-        <br />
-        <a
-          href="mailto:careers@leafclutchtech.com.np"
-          className="transition-colors hover:text-leaf-green-dark"
-        >
-          careers@leafclutchtech.com.np
-        </a>
-      </>
-    ),
-  },
-  {
-    icon: MapPin,
-    title: "Visit Us",
-    content: (
-      <>
-        <p>Siddharthanagar</p>
-        <p>Rupandehi, Nepal</p>
-      </>
-    ),
-  },
-  {
-    icon: Phone,
-    title: "Call Us",
-    content: (
-      <>
-        <a
-          href="tel:+9779766715768"
-          className="transition-colors hover:text-leaf-green-dark"
-        >
-          +977-9766715768
-        </a>
-        <br />
-        <a
-          href="tel:+9779766715669"
-          className="transition-colors hover:text-leaf-green-dark"
-        >
-          +977-9766715669
-        </a>
-      </>
-    ),
-  },
-  {
-    icon: Clock,
-    title: "Office Hours",
-    content: (
-      <>
-        <p>Sunday – Friday</p>
-        <p>10:00 AM – 6:00 PM</p>
-      </>
-    ),
-  },
-];
+import { getSiteSettings } from "@/lib/queries/admin";
+import type { SiteSettings } from "@/types/site-settings";
 
 export default function ContactPage() {
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+
+  useEffect(() => {
+    getSiteSettings().then((data) => {
+      if (data) setSettings(data);
+    });
+  }, []);
+
+  const email = settings?.email || "info@leafclutchtech.com.np";
+  const phone = settings?.phone || "+977-9766715768";
+  const whatsapp = settings?.whatsapp || "+9779800000000";
+  const address = settings?.address || "Siddharthanagar, Rupandehi, Nepal";
+  const officeHours = settings?.office_hours || "Sunday – Friday: 10:00 AM – 6:00 PM";
+
+  const contactInfo = [
+    {
+      icon: Mail,
+      title: "Email Us",
+      content: (
+        <a
+          href={`mailto:${email}`}
+          className="transition-colors hover:text-leaf-green-dark"
+        >
+          {email}
+        </a>
+      ),
+    },
+    {
+      icon: MapPin,
+      title: "Visit Us",
+      content: <p>{address}</p>,
+    },
+    {
+      icon: Phone,
+      title: "Call Us",
+      content: (
+        <a
+          href={`tel:${phone.replace(/\s+/g, "")}`}
+          className="transition-colors hover:text-leaf-green-dark"
+        >
+          {phone}
+        </a>
+      ),
+    },
+    {
+      icon: Clock,
+      title: "Office Hours",
+      content: <p>{officeHours}</p>,
+    },
+  ];
+
   return (
     <main>
       <section className="px-5 py-20 sm:px-8 sm:py-24 lg:px-12">
@@ -130,13 +120,17 @@ export default function ContactPage() {
                   );
                 })}
               </div>
-              <a
-                href="#"
-                className="mt-10 flex items-center justify-center p-3  gap-3 rounded-xl border bg-leaf-green-dark text-white "
-              >
-                <FaWhatsapp className="size-5 text-white" />
-                Chat with us on WhatsApp
-              </a>
+              {whatsapp && (
+                <a
+                  href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-10 flex items-center justify-center p-3 gap-3 rounded-xl border bg-leaf-green-dark text-white hover:bg-leaf-green transition-colors"
+                >
+                  <FaWhatsapp className="size-5 text-white" />
+                  Chat with us on WhatsApp
+                </a>
+              )}
             </div>
             <div className="rounded-2xl border border-leaf-border bg-white p-7 sm:p-9">
               <h2 className="text-2xl font-bold text-leaf-navy text-center">
@@ -156,4 +150,4 @@ export default function ContactPage() {
       </section>
     </main>
   );
-}
+}
