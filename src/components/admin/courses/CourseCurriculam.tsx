@@ -12,6 +12,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  Upload,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,9 +49,11 @@ import {
 import {
   deleteCourseLesson,
   deleteCourseSection,
+  getCourseById,
   getCourseCurriculum,
   saveCourseLesson,
   saveCourseSection,
+  uploadCoursePdf,
 } from "@/lib/queries/admin";
 
 const sectionSchema = z.object({
@@ -130,6 +133,32 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
       console.error("Failed to load curriculum:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [coursePdf, setCoursePdf] = useState<string | null>(null);
+  const [uploadingCoursePdf, setUploadingCoursePdf] = useState(false);
+
+  useEffect(() => {
+    if (!courseId) return;
+    getCourseById(courseId).then((c: any) => {
+      if (c?.syllabus_pdf_url || c?.pdf_url) {
+        setCoursePdf(c.syllabus_pdf_url || c.pdf_url);
+      }
+    });
+  }, [courseId]);
+
+  const handleCoursePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCoursePdf(true);
+    try {
+      const url = await uploadCoursePdf(courseId, file);
+      if (url) setCoursePdf(url);
+    } catch (err) {
+      console.error("Failed to upload course PDF:", err);
+    } finally {
+      setUploadingCoursePdf(false);
     }
   };
 
@@ -307,6 +336,56 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
       </CardHeader>
 
       <CardContent>
+        {/* Course PDF Document Upload */}
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50/40 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 border border-red-200">
+              <FileText className="size-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-leaf-navy">Course Syllabus PDF Document</h4>
+              <p className="text-xs text-leaf-muted">
+                Upload 1 official PDF document for this course for students to view or download.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            {coursePdf && (
+              <a
+                href={coursePdf}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md bg-white border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 transition-colors shadow-sm"
+              >
+                <FileText className="size-4 text-red-600" />
+                View PDF
+              </a>
+            )}
+
+            <label className="relative inline-flex items-center justify-center gap-2 rounded-md bg-leaf-navy px-4 py-2 text-xs font-semibold text-white hover:bg-leaf-navy/90 transition-colors cursor-pointer shadow-sm">
+              {uploadingCoursePdf ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Uploading PDF...
+                </>
+              ) : (
+                <>
+                  <Upload className="size-4" />
+                  {coursePdf ? "Change Course PDF" : "Upload Course PDF"}
+                </>
+              )}
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                disabled={uploadingCoursePdf}
+                onChange={handleCoursePdfUpload}
+                className="sr-only"
+              />
+            </label>
+          </div>
+        </div>
+
         {loading ? (
           <div className="flex items-center justify-center py-12 text-leaf-muted">
             <Loader2 className="size-6 animate-spin mr-2" />

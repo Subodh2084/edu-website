@@ -634,6 +634,42 @@ export async function uploadLessonPdf(file: File): Promise<string | null> {
   }
 }
 
+/**
+ * Upload 1 PDF file for a course to Supabase Storage and update the course's syllabus_pdf_url
+ */
+export async function uploadCoursePdf(courseId: string, file: File): Promise<string | null> {
+  const supabase = createClient();
+  try {
+    const ext = file.name.split(".").pop() || "pdf";
+    const fileName = `course-syllabus-${Date.now()}-${Math.random().toString(36).substring(2, 6)}.${ext}`;
+    const filePath = `syllabi/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("testimonial-images")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error("Course PDF upload error:", uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage.from("testimonial-images").getPublicUrl(filePath);
+    const pdfUrl = data?.publicUrl || null;
+
+    if (pdfUrl) {
+      await supabase
+        .from("courses")
+        .update({ syllabus_pdf_url: pdfUrl } as any)
+        .eq("id", courseId);
+    }
+
+    return pdfUrl;
+  } catch (err) {
+    console.error("Failed to upload course PDF:", err);
+    return null;
+  }
+}
+
 export async function deleteCourseLesson(lessonId: string) {
   const supabase = createClient();
   const { error } = await supabase.from("course_lessons").delete().eq("id", lessonId);
