@@ -84,25 +84,54 @@ export async function POST(request: Request) {
         .select()
         .single();
 
-      // If updating failed and payload has a PDF url, try fallback to alternative column name
-      if (error && (payload.syllabus_pdf_url || payload.pdf_url)) {
+      // If updating failed and payload has a PDF url, handle missing columns gracefully
+      if (error && (payload.syllabus_pdf_url !== undefined || payload.pdf_url !== undefined)) {
         const fallbackData = { ...updateData };
         const pdfValue = payload.syllabus_pdf_url || payload.pdf_url;
-        
-        // Swap column key
-        if ("syllabus_pdf_url" in fallbackData) {
-          delete fallbackData.syllabus_pdf_url;
+
+        // Try pdf_url only
+        delete fallbackData.syllabus_pdf_url;
+        if (pdfValue) {
           fallbackData.pdf_url = pdfValue;
-        } else if ("pdf_url" in fallbackData) {
+        } else {
           delete fallbackData.pdf_url;
-          fallbackData.syllabus_pdf_url = pdfValue;
         }
 
-        const retry = await (supabase.from("courses") as any)
+        let retry = await (supabase.from("courses") as any)
           .update(fallbackData)
           .eq("id", payload.id)
           .select()
           .single();
+
+        // If that also failed, try syllabus_pdf_url only
+        if (retry.error) {
+          delete fallbackData.pdf_url;
+          if (pdfValue) fallbackData.syllabus_pdf_url = pdfValue;
+
+          retry = await (supabase.from("courses") as any)
+            .update(fallbackData)
+            .eq("id", payload.id)
+            .select()
+            .single();
+        }
+
+        // If both column names fail (neither column exists), strip both and store in description comment
+        if (retry.error) {
+          delete fallbackData.syllabus_pdf_url;
+          delete fallbackData.pdf_url;
+
+          if (pdfValue) {
+            let desc = fallbackData.description || "";
+            desc = desc.replace(/<!-- SYLLABUS_PDF_URL:.*? -->/g, "").trim();
+            fallbackData.description = `${desc}\n<!-- SYLLABUS_PDF_URL:${pdfValue} -->`;
+          }
+
+          retry = await (supabase.from("courses") as any)
+            .update(fallbackData)
+            .eq("id", payload.id)
+            .select()
+            .single();
+        }
 
         if (!retry.error) {
           data = retry.data;
@@ -123,14 +152,21 @@ export async function POST(request: Request) {
 
     // Full creation mode
     const slug = slugify(payload.slug || payload.title);
-    const courseData = {
+    const pdfUrl = payload.syllabus_pdf_url || payload.pdf_url || null;
+
+    let courseDescription = payload.description || "";
+    if (pdfUrl) {
+      courseDescription = courseDescription.replace(/<!-- SYLLABUS_PDF_URL:.*? -->/g, "").trim();
+      courseDescription = `${courseDescription}\n<!-- SYLLABUS_PDF_URL:${pdfUrl} -->`;
+    }
+
+    const courseData: Record<string, any> = {
       title: payload.title,
       slug,
       short_description: payload.short_description || "",
-      description: payload.description || "",
+      description: courseDescription,
       category_id: payload.category_id || null,
       preview_video_url: payload.preview_video_url || null,
-      syllabus_pdf_url: payload.syllabus_pdf_url || payload.pdf_url || null,
       price: payload.price || 0,
       discount_price: payload.discount_price || null,
       level: payload.level || "beginner",
@@ -142,10 +178,47 @@ export async function POST(request: Request) {
       ...(payload.thumbnail ? { thumbnail: payload.thumbnail } : {}),
     };
 
-    const { data, error } = await (supabase.from("courses") as any)
+    // If a PDF url was supplied, try with syllabus_pdf_url first
+    if (pdfUrl) {
+      courseData.syllabus_pdf_url = pdfUrl;
+    }
+
+    let { data, error } = await (supabase.from("courses") as any)
       .insert(courseData)
       .select()
       .single();
+
+    // If insertion failed due to missing syllabus_pdf_url column, retry with pdf_url
+    if (error && pdfUrl) {
+      const fallbackData = { ...courseData };
+      delete fallbackData.syllabus_pdf_url;
+      fallbackData.pdf_url = pdfUrl;
+
+      const retryPdf = await (supabase.from("courses") as any)
+        .insert(fallbackData)
+        .select()
+        .single();
+
+      if (!retryPdf.error) {
+        data = retryPdf.data;
+        error = null;
+      } else {
+        // If both column names do not exist in the courses table, omit the column entirely
+        // (the URL is already safely embedded in the description comment above)
+        delete fallbackData.pdf_url;
+        const retryClean = await (supabase.from("courses") as any)
+          .insert(fallbackData)
+          .select()
+          .single();
+
+        if (!retryClean.error) {
+          data = retryClean.data;
+          error = null;
+        } else {
+          error = retryClean.error;
+        }
+      }
+    }
 
     if (error) {
       console.error("Error creating course:", error.message, error.code, error.details);

@@ -9,10 +9,7 @@ import {
   ListOrdered,
   Users,
   FolderGit2,
-  Eye,
   ArrowLeft,
-  Pencil,
-  Sparkles,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +63,6 @@ export default function CourseManagementPage() {
 
             {course?.featured && (
               <Badge className="bg-leaf-soft text-leaf-green-dark border border-leaf-green-light/40 font-semibold px-2.5 py-0.5">
-                <Sparkles className="mr-1 size-3 text-leaf-green-dark" />
                 Featured
               </Badge>
             )}

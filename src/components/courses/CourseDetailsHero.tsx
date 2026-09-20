@@ -129,7 +129,7 @@ export default function CourseDetailsHero({
 
             {/* Pricing */}
             <div className="p-6">
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 {course.discount_price ? (
                   <>
                     <span className="text-2xl font-bold text-leaf-navy">
@@ -146,7 +146,7 @@ export default function CourseDetailsHero({
                     NPR {course.price.toLocaleString()}
                   </span>
                 )}
-              </div>
+              </div> */}
 
               <Link
                 href={`/courses/${course.slug}/enroll`}
