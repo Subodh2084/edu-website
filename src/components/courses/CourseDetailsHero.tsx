@@ -14,9 +14,26 @@ interface CourseHeroProps {
   course: Course;
 }
 
+function toYouTubeEmbed(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const v = u.searchParams.get("v");
+    if (v) return `https://www.youtube.com/embed/${v}`;
+    if (u.hostname === "youtu.be") return `https://www.youtube.com/embed${u.pathname}`;
+    if (u.pathname.startsWith("/embed/")) return url;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export default function CourseDetailsHero({
   course,
 }: CourseHeroProps) {
+  const embedSrc = course.preview_video_url
+    ? toYouTubeEmbed(course.preview_video_url)
+    : null;
+
   return (
     <section className="relative bg-leaf-navy">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
@@ -86,16 +103,26 @@ export default function CourseDetailsHero({
               lg:mt-0
             "
           >
-            {/* Thumbnail */}
-            <div className="relative aspect-video w-full overflow-hidden bg-leaf-soft">
-              <Image
-                src={course.thumbnail}
-                alt={course.title}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 380px"
-                className="object-cover"
-              />
+            {/* Video or Thumbnail */}
+            <div className="relative aspect-video w-full overflow-hidden bg-black">
+              {embedSrc ? (
+                <iframe
+                  src={embedSrc}
+                  title={`${course.title} – Preview Video`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="h-full w-full border-0"
+                />
+              ) : (
+                <Image
+                  src={course.thumbnail}
+                  alt={course.title}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 380px"
+                  className="object-cover"
+                />
+              )}
             </div>
 
             {/* Pricing */}

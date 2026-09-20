@@ -1,4 +1,4 @@
-import { ChevronDown, PlayCircle } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import {
   Accordion,
@@ -69,7 +69,7 @@ export default function CourseCurriculum({
                       className="flex items-center justify-between gap-4 rounded-md px-2 py-3"
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <PlayCircle className="size-4 shrink-0 text-leaf-green-dark" />
+                        <FileText className="size-4 shrink-0 text-leaf-green-dark" />
                          <Accordion>
                           <AccordionItem>
                             <AccordionTrigger className="text-left hover:no-underline">

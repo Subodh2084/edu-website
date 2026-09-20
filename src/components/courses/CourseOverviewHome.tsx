@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { Course } from "@/types/course";
 
 interface CourseOverviewProps {
@@ -44,11 +43,7 @@ export default function CourseOverviewHome({
                 />
               </div>
               <div className="p-6 sm:p-8">
-                <Badge className="bg-leaf-soft text-leaf-navy hover:bg-leaf-soft">
-                  {course.category_id}
-                </Badge>
-
-                <h3 className="mt-4 text-2xl font-bold text-leaf-navy">
+                <h3 className="text-2xl font-bold text-leaf-navy">
                   {course.title}
                 </h3>
 

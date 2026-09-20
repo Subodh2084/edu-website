@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ChevronDown,
   ChevronRight,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -13,7 +14,6 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,93 +44,94 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import {
+  deleteCourseLesson,
+  deleteCourseSection,
+  getCourseCurriculum,
+  saveCourseLesson,
+  saveCourseSection,
+} from "@/lib/queries/admin";
+
 const sectionSchema = z.object({
   title: z.string().min(3, "Section title must be at least 3 characters"),
-
   description: z.string().optional(),
 });
 
 const lessonSchema = z.object({
   title: z.string().min(3, "Lesson title must be at least 3 characters"),
-
   description: z.string().optional(),
-
   video_url: z
     .string()
     .url("Please enter a valid URL")
     .optional()
     .or(z.literal("")),
-
   duration: z.string().optional(),
 });
 
 type SectionFormValues = z.infer<typeof sectionSchema>;
 type LessonFormValues = z.infer<typeof lessonSchema>;
 
-const initialSections = [
-  {
-    id: "1",
-    title: "Introduction to React",
-    description: "Learn the fundamentals of React and its core concepts.",
-    lessons: [
-      {
-        id: "1-1",
-        title: "What is React?",
-        description: "Introduction to React and why it is used.",
-        video_url: "",
-        duration: "20 min",
-      },
-      {
-        id: "1-2",
-        title: "Components and JSX",
-        description: "Understand components and JSX syntax.",
-        video_url: "",
-        duration: "30 min",
-      },
-    ],
-  },
-  {
-    id: "2",
-    title: "React Hooks",
-    description: "Learn how to manage state and side effects using hooks.",
-    lessons: [
-      {
-        id: "2-1",
-        title: "useState Hook",
-        description: "Learn how to manage component state.",
-        video_url: "",
-        duration: "25 min",
-      },
-      {
-        id: "2-2",
-        title: "useEffect Hook",
-        description: "Understand side effects in React applications.",
-        video_url: "",
-        duration: "30 min",
-      },
-    ],
-  },
-];
+interface LessonItem {
+  id: string;
+  title: string;
+  description?: string;
+  video_url?: string;
+  duration?: string;
+}
 
-export default function CourseCurriculum() {
-  const [sections, setSections] = useState(initialSections);
+interface SectionItem {
+  id: string;
+  title: string;
+  description?: string;
+  lessons: LessonItem[];
+}
 
-  const [expandedSections, setExpandedSections] = useState<string[]>(
-    initialSections.map((section) => section.id),
-  );
+export default function CourseCurriculum({ courseId }: { courseId: string }) {
+  const [sections, setSections] = useState<SectionItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
 
   const [editingSection, setEditingSection] = useState<string | null>(null);
-
   const [editingLesson, setEditingLesson] = useState<string | null>(null);
-
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
   const [deleteSectionId, setDeleteSectionId] = useState<string | null>(null);
-
   const [deleteLessonId, setDeleteLessonId] = useState<string | null>(null);
+
+  const loadCurriculum = async () => {
+    if (!courseId) return;
+    setLoading(true);
+    try {
+      const data = await getCourseCurriculum(courseId);
+      const mapped: SectionItem[] = (data || []).map((sec: any) => ({
+        id: sec.id,
+        title: sec.title,
+        description: sec.description || "",
+        lessons: (sec.lessons || []).map((les: any) => ({
+          id: les.id,
+          title: les.title,
+          description: les.description || "",
+          video_url: les.video_url || "",
+          duration: les.duration || "",
+        })),
+      }));
+
+      setSections(mapped);
+      setExpandedSections(mapped.map((s) => s.id));
+    } catch (err) {
+      console.error("Failed to load curriculum:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCurriculum();
+  }, [courseId]);
 
   const {
     register: registerSection,
@@ -166,167 +167,117 @@ export default function CourseCurriculum() {
     setExpandedSections((current) =>
       current.includes(sectionId)
         ? current.filter((id) => id !== sectionId)
-        : [...current, sectionId],
+        : [...current, sectionId]
     );
   };
 
   const handleAddSection = () => {
     setEditingSection(null);
-
-    resetSection({
-      title: "",
-      description: "",
-    });
-
+    resetSection({ title: "", description: "" });
     setSectionDialogOpen(true);
   };
 
   const handleEditSection = (id: string) => {
     const section = sections.find((item) => item.id === id);
-
     if (!section) return;
 
     setEditingSection(id);
-
     setSectionValue("title", section.title);
-    setSectionValue("description", section.description);
-
+    setSectionValue("description", section.description || "");
     setSectionDialogOpen(true);
   };
 
-  const onSectionSubmit = (data: SectionFormValues) => {
-    if (editingSection) {
-      setSections((current) =>
-        current.map((section) =>
-          section.id === editingSection
-            ? {
-                ...section,
-                title: data.title,
-                description: data.description || "",
-              }
-            : section,
-        ),
-      );
-    } else {
-      setSections((current) => [
-        ...current,
-        {
-          id: Date.now().toString(),
-          title: data.title,
-          description: data.description || "",
-          lessons: [],
-        },
-      ]);
+  const onSectionSubmit = async (data: SectionFormValues) => {
+    setSubmitting(true);
+    try {
+      await saveCourseSection(courseId, {
+        id: editingSection || undefined,
+        title: data.title,
+        description: data.description,
+      });
+      await loadCurriculum();
+      resetSection();
+      setEditingSection(null);
+      setSectionDialogOpen(false);
+    } catch (err) {
+      console.error("Failed to save section:", err);
+    } finally {
+      setSubmitting(false);
     }
-
-    resetSection();
-    setEditingSection(null);
-    setSectionDialogOpen(false);
   };
 
   const handleAddLesson = (sectionId: string) => {
     setSelectedSection(sectionId);
     setEditingLesson(null);
-
-    resetLesson({
-      title: "",
-      description: "",
-      video_url: "",
-      duration: "",
-    });
-
+    resetLesson({ title: "", description: "", video_url: "", duration: "" });
     setLessonDialogOpen(true);
   };
 
   const handleEditLesson = (sectionId: string, lessonId: string) => {
     const section = sections.find((item) => item.id === sectionId);
-
     const lesson = section?.lessons.find((item) => item.id === lessonId);
-
     if (!lesson) return;
 
     setSelectedSection(sectionId);
     setEditingLesson(lessonId);
 
     setLessonValue("title", lesson.title);
-    setLessonValue("description", lesson.description);
-    setLessonValue("video_url", lesson.video_url);
-    setLessonValue("duration", lesson.duration);
+    setLessonValue("description", lesson.description || "");
+    setLessonValue("video_url", lesson.video_url || "");
+    setLessonValue("duration", lesson.duration || "");
 
     setLessonDialogOpen(true);
   };
 
-  const onLessonSubmit = (data: LessonFormValues) => {
+  const onLessonSubmit = async (data: LessonFormValues) => {
     if (!selectedSection) return;
-
-    setSections((current) =>
-      current.map((section) => {
-        if (section.id !== selectedSection) {
-          return section;
-        }
-
-        if (editingLesson) {
-          return {
-            ...section,
-            lessons: section.lessons.map((lesson) =>
-              lesson.id === editingLesson
-                ? {
-                    ...lesson,
-                    title: data.title,
-                    description: data.description || "",
-                    video_url: data.video_url || "",
-                    duration: data.duration || "",
-                  }
-                : lesson,
-            ),
-          };
-        }
-
-        return {
-          ...section,
-          lessons: [
-            ...section.lessons,
-            {
-              id: Date.now().toString(),
-              title: data.title,
-              description: data.description || "",
-              video_url: data.video_url || "",
-              duration: data.duration || "",
-            },
-          ],
-        };
-      }),
-    );
-
-    resetLesson();
-    setEditingLesson(null);
-    setSelectedSection(null);
-    setLessonDialogOpen(false);
+    setSubmitting(true);
+    try {
+      await saveCourseLesson(selectedSection, {
+        id: editingLesson || undefined,
+        title: data.title,
+        description: data.description,
+        video_url: data.video_url,
+        duration: data.duration,
+      });
+      await loadCurriculum();
+      resetLesson();
+      setEditingLesson(null);
+      setSelectedSection(null);
+      setLessonDialogOpen(false);
+    } catch (err) {
+      console.error("Failed to save lesson:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleDeleteSection = () => {
+  const handleDeleteSection = async () => {
     if (!deleteSectionId) return;
-
-    setSections((current) =>
-      current.filter((section) => section.id !== deleteSectionId),
-    );
-
-    setDeleteSectionId(null);
+    setSubmitting(true);
+    try {
+      await deleteCourseSection(deleteSectionId);
+      await loadCurriculum();
+      setDeleteSectionId(null);
+    } catch (err) {
+      console.error("Failed to delete section:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleDeleteLesson = () => {
+  const handleDeleteLesson = async () => {
     if (!deleteLessonId) return;
-
-    setSections((current) =>
-      current.map((section) => ({
-        ...section,
-        lessons: section.lessons.filter(
-          (lesson) => lesson.id !== deleteLessonId,
-        ),
-      })),
-    );
-
-    setDeleteLessonId(null);
+    setSubmitting(true);
+    try {
+      await deleteCourseLesson(deleteLessonId);
+      await loadCurriculum();
+      setDeleteLessonId(null);
+    } catch (err) {
+      console.error("Failed to delete lesson:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -334,7 +285,6 @@ export default function CourseCurriculum() {
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <CardTitle className="text-leaf-navy">Course Curriculum</CardTitle>
-
           <p className="mt-1 text-sm text-leaf-muted">
             Organize the sections and lessons included in this course.
           </p>
@@ -350,168 +300,175 @@ export default function CourseCurriculum() {
       </CardHeader>
 
       <CardContent>
-        <div className="space-y-3">
-          {sections.map((section, index) => {
-            const isExpanded = expandedSections.includes(section.id);
+        {loading ? (
+          <div className="flex items-center justify-center py-12 text-leaf-muted">
+            <Loader2 className="size-6 animate-spin mr-2" />
+            Loading curriculum...
+          </div>
+        ) : sections.length === 0 ? (
+          <div className="py-8 text-center text-sm text-leaf-muted border rounded-md border-dashed">
+            No sections created yet. Click "Add Section" to create your first course section.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sections.map((section, index) => {
+              const isExpanded = expandedSections.includes(section.id);
 
-            return (
-              <div
-                key={section.id}
-                className="rounded-md border border-leaf-border"
-              >
-                {/* Section */}
+              return (
+                <div
+                  key={section.id}
+                  className="rounded-md border border-leaf-border"
+                >
+                  {/* Section Row */}
+                  <div className="flex items-start gap-3 p-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(section.id)}
+                      className="mt-1 text-leaf-muted"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="size-4" />
+                      ) : (
+                        <ChevronRight className="size-4" />
+                      )}
+                    </button>
 
-                <div className="flex items-start gap-3 p-3">
-                  <button
-                    type="button"
-                    onClick={() => toggleSection(section.id)}
-                    className="mt-1 text-leaf-muted"
-                  >
-                    {isExpanded ? (
-                      <ChevronDown className="size-4" />
-                    ) : (
-                      <ChevronRight className="size-4" />
-                    )}
-                  </button>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-semibold text-leaf-navy">
+                        Section {index + 1}: {section.title}
+                      </h3>
 
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-semibold text-leaf-navy">
-                      Section {index + 1}: {section.title}
-                    </h3>
+                      {section.description && (
+                        <p className="mt-1 text-sm text-leaf-muted">
+                          {section.description}
+                        </p>
+                      )}
+                    </div>
 
-                    {section.description && (
-                      <p className="mt-1 text-sm text-leaf-muted">
-                        {section.description}
-                      </p>
-                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="shrink-0 text-leaf-muted"
+                          />
+                        }
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="end" className="bg-leaf-bg">
+                        <DropdownMenuItem
+                          onClick={() => handleEditSection(section.id)}
+                        >
+                          <Pencil className="size-4" />
+                          Edit
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => setDeleteSectionId(section.id)}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="size-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="shrink-0 text-leaf-muted"
-                        />
-                      }
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </DropdownMenuTrigger>
+                  {/* Lessons */}
+                  {isExpanded && (
+                    <div className="border-t border-leaf-border px-3 py-3">
+                      <div className="space-y-2 pl-7">
+                        {section.lessons.map((lesson, lessonIndex) => (
+                          <div
+                            key={lesson.id}
+                            className="flex items-start gap-3 rounded-md border border-leaf-border p-3"
+                          >
+                            <span className="text-sm font-medium text-leaf-muted">
+                              {lessonIndex + 1}.
+                            </span>
 
-                    <DropdownMenuContent align="end" className="bg-leaf-bg">
-                      <DropdownMenuItem
-                        onClick={() => handleEditSection(section.id)}
-                      >
-                        <Pencil className="size-4" />
-                        Edit
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem
-                        onClick={() => setDeleteSectionId(section.id)}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="size-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                {/* Lessons */}
-
-                {isExpanded && (
-                  <div className="border-t border-leaf-border px-3 py-3">
-                    <div className="space-y-2 pl-7">
-                      {section.lessons.map((lesson, lessonIndex) => (
-                        <div
-                          key={lesson.id}
-                          className="flex items-start gap-3 rounded-md border border-leaf-border p-3"
-                        >
-                          <span className="text-sm font-medium text-leaf-muted">
-                            {lessonIndex + 1}.
-                          </span>
-
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-leaf-navy">
-                              {lesson.title}
-                            </p>
-
-                            {lesson.description && (
-                              <p className="mt-1 text-sm text-leaf-muted">
-                                {lesson.description}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-leaf-navy">
+                                {lesson.title}
                               </p>
-                            )}
 
-                            {lesson.duration && (
-                              <p className="mt-1 text-xs text-leaf-muted">
-                                {lesson.duration}
-                              </p>
-                            )}
-                          </div>
+                              {lesson.description && (
+                                <p className="mt-1 text-sm text-leaf-muted">
+                                  {lesson.description}
+                                </p>
+                              )}
 
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="shrink-0 text-leaf-muted"
-                                />
-                              }
-                            >
-                              <MoreHorizontal className="size-4" />
-                            </DropdownMenuTrigger>
+                              {lesson.duration && (
+                                <p className="mt-1 text-xs text-leaf-muted">
+                                  {lesson.duration}
+                                </p>
+                              )}
+                            </div>
 
-                            <DropdownMenuContent
-                              align="end"
-                              className="bg-leaf-bg"
-                            >
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleEditLesson(section.id, lesson.id)
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                render={
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="shrink-0 text-leaf-muted"
+                                  />
                                 }
                               >
-                                <Pencil className="size-4" />
-                                Edit
-                              </DropdownMenuItem>
+                                <MoreHorizontal className="size-4" />
+                              </DropdownMenuTrigger>
 
-                              <DropdownMenuItem
-                                onClick={() => setDeleteLessonId(lesson.id)}
-                                className="text-red-600 focus:text-red-600"
+                              <DropdownMenuContent
+                                align="end"
+                                className="bg-leaf-bg"
                               >
-                                <Trash2 className="size-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      ))}
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleEditLesson(section.id, lesson.id)
+                                  }
+                                >
+                                  <Pencil className="size-4" />
+                                  Edit
+                                </DropdownMenuItem>
 
-                      <Button
-                        variant="outline"
-                        onClick={() => handleAddLesson(section.id)}
-                        className="mt-2"
-                      >
-                        <Plus className="size-4" />
-                        Add Lesson
-                      </Button>
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteLessonId(lesson.id)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="size-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        ))}
+
+                        <Button
+                          variant="outline"
+                          onClick={() => handleAddLesson(section.id)}
+                          className="mt-2"
+                        >
+                          <Plus className="size-4" />
+                          Add Lesson
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
 
       {/* Section Dialog */}
-
       <Dialog
         open={sectionDialogOpen}
         onOpenChange={(value) => {
           setSectionDialogOpen(value);
-
           if (!value) {
             resetSection();
             setEditingSection(null);
@@ -523,7 +480,6 @@ export default function CourseCurriculum() {
             <DialogTitle>
               {editingSection ? "Edit Course Section" : "Add Course Section"}
             </DialogTitle>
-
             <DialogDescription>
               {editingSection
                 ? "Update this course section."
@@ -542,13 +498,11 @@ export default function CourseCurriculum() {
               >
                 Section Title
               </label>
-
               <Input
                 id="section-title"
                 placeholder="e.g. Introduction to React"
                 {...registerSection("title")}
               />
-
               {sectionErrors.title && (
                 <p className="text-sm text-red-500">
                   {sectionErrors.title.message}
@@ -563,7 +517,6 @@ export default function CourseCurriculum() {
               >
                 Description
               </label>
-
               <Textarea
                 id="section-description"
                 placeholder="Describe what this section covers..."
@@ -580,11 +533,12 @@ export default function CourseCurriculum() {
               >
                 Cancel
               </Button>
-
               <Button
                 type="submit"
+                disabled={submitting}
                 className="bg-leaf-green-dark text-white hover:bg-leaf-green"
               >
+                {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {editingSection ? "Save Changes" : "Add Section"}
               </Button>
             </div>
@@ -593,12 +547,10 @@ export default function CourseCurriculum() {
       </Dialog>
 
       {/* Lesson Dialog */}
-
       <Dialog
         open={lessonDialogOpen}
         onOpenChange={(value) => {
           setLessonDialogOpen(value);
-
           if (!value) {
             resetLesson();
             setEditingLesson(null);
@@ -611,7 +563,6 @@ export default function CourseCurriculum() {
             <DialogTitle>
               {editingLesson ? "Edit Course Lesson" : "Add Course Lesson"}
             </DialogTitle>
-
             <DialogDescription>
               {editingLesson
                 ? "Update this lesson."
@@ -630,13 +581,11 @@ export default function CourseCurriculum() {
               >
                 Lesson Title
               </label>
-
               <Input
                 id="lesson-title"
                 placeholder="e.g. What is React?"
                 {...registerLesson("title")}
               />
-
               {lessonErrors.title && (
                 <p className="text-sm text-red-500">
                   {lessonErrors.title.message}
@@ -651,7 +600,6 @@ export default function CourseCurriculum() {
               >
                 Description
               </label>
-
               <Textarea
                 id="lesson-description"
                 placeholder="Describe what students will learn..."
@@ -667,13 +615,11 @@ export default function CourseCurriculum() {
               >
                 Video URL
               </label>
-
               <Input
                 id="video-url"
                 placeholder="https://..."
                 {...registerLesson("video_url")}
               />
-
               {lessonErrors.video_url && (
                 <p className="text-sm text-red-500">
                   {lessonErrors.video_url.message}
@@ -688,7 +634,6 @@ export default function CourseCurriculum() {
               >
                 Duration
               </label>
-
               <Input
                 id="duration"
                 placeholder="e.g. 30 min"
@@ -704,11 +649,12 @@ export default function CourseCurriculum() {
               >
                 Cancel
               </Button>
-
               <Button
                 type="submit"
+                disabled={submitting}
                 className="bg-leaf-green-dark text-white hover:bg-leaf-green"
               >
+                {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {editingLesson ? "Save Changes" : "Add Lesson"}
               </Button>
             </div>
@@ -716,29 +662,23 @@ export default function CourseCurriculum() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Section */}
-
+      {/* Delete Section Dialog */}
       <AlertDialog
         open={!!deleteSectionId}
         onOpenChange={(value) => {
-          if (!value) {
-            setDeleteSectionId(null);
-          }
+          if (!value) setDeleteSectionId(null);
         }}
       >
         <AlertDialogContent className="border-leaf-border bg-leaf-bg">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this section?</AlertDialogTitle>
-
             <AlertDialogDescription>
               This action cannot be undone. The section and its lessons will be
               removed from this course.
             </AlertDialogDescription>
           </AlertDialogHeader>
-
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-
             <AlertDialogAction
               onClick={handleDeleteSection}
               className="bg-red-600 text-white hover:bg-red-700"
@@ -749,29 +689,23 @@ export default function CourseCurriculum() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Lesson */}
-
+      {/* Delete Lesson Dialog */}
       <AlertDialog
         open={!!deleteLessonId}
         onOpenChange={(value) => {
-          if (!value) {
-            setDeleteLessonId(null);
-          }
+          if (!value) setDeleteLessonId(null);
         }}
       >
         <AlertDialogContent className="border-leaf-border bg-leaf-bg">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this lesson?</AlertDialogTitle>
-
             <AlertDialogDescription>
               This action cannot be undone. This lesson will be removed from the
               course.
             </AlertDialogDescription>
           </AlertDialogHeader>
-
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-
             <AlertDialogAction
               onClick={handleDeleteLesson}
               className="bg-red-600 text-white hover:bg-red-700"
