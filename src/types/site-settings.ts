@@ -4,6 +4,7 @@ export interface SiteSettings {
   logo: string | null;
   favicon: string | null;
   email: string | null;
+  
   phone: string | null;
   whatsapp: string | null;
   address: string | null;

@@ -11,7 +11,8 @@ interface Lesson {
   id: string;
   title: string;
   duration: string;
-  description?:string
+  description?: string;
+  pdf_url?: string;
 }
 
 interface Section {
@@ -90,9 +91,23 @@ export default function CourseCurriculum({
                         
                       </div>
 
-                      <span className="shrink-0 text-xs text-leaf-muted">
-                        {lesson.duration}
-                      </span>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {lesson.pdf_url && (
+                          <a
+                            href={lesson.pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-red-50 border border-red-200 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                            title="View PDF Document"
+                          >
+                            <FileText className="size-3.5 text-red-600" />
+                            View PDF
+                          </a>
+                        )}
+                        <span className="shrink-0 text-xs text-leaf-muted">
+                          {lesson.duration}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

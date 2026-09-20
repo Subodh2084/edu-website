@@ -565,16 +565,28 @@ export async function deleteCourseSection(sectionId: string) {
   return !error;
 }
 
-export async function saveCourseLesson(sectionId: string, lesson: { id?: string; title: string; description?: string; video_url?: string; duration?: string; is_preview?: boolean }) {
+export async function saveCourseLesson(
+  sectionId: string,
+  lesson: {
+    id?: string;
+    title: string;
+    description?: string;
+    video_url?: string;
+    pdf_url?: string;
+    duration?: string;
+    is_preview?: boolean;
+  }
+) {
   const supabase = createClient();
-  const lessonData = {
+  const lessonData: any = {
     section_id: sectionId,
     title: lesson.title,
     description: lesson.description || null,
     video_url: lesson.video_url || null,
+    pdf_url: lesson.pdf_url || null,
     duration: lesson.duration || "15 mins",
     is_preview: lesson.is_preview ?? false,
-    lesson_type: "video",
+    lesson_type: lesson.pdf_url ? "pdf" : "video",
   };
 
   if (lesson.id) {
@@ -592,6 +604,33 @@ export async function saveCourseLesson(sectionId: string, lesson: { id?: string;
       .select()
       .single();
     return error ? null : data;
+  }
+}
+
+/**
+ * Upload lesson PDF document to Supabase storage bucket
+ */
+export async function uploadLessonPdf(file: File): Promise<string | null> {
+  const supabase = createClient();
+  try {
+    const ext = file.name.split(".").pop() || "pdf";
+    const fileName = `lesson-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const filePath = `documents/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("testimonial-images")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error("PDF upload error:", uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage.from("testimonial-images").getPublicUrl(filePath);
+    return data?.publicUrl || null;
+  } catch (err) {
+    console.error("Failed to upload PDF:", err);
+    return null;
   }
 }
 

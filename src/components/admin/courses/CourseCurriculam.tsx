@@ -6,11 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ChevronDown,
   ChevronRight,
+  FileText,
   Loader2,
   MoreHorizontal,
   Pencil,
   Plus,
   Trash2,
+  Upload,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +52,7 @@ import {
   getCourseCurriculum,
   saveCourseLesson,
   saveCourseSection,
+  uploadLessonPdf,
 } from "@/lib/queries/admin";
 
 const sectionSchema = z.object({
@@ -65,6 +68,7 @@ const lessonSchema = z.object({
     .url("Please enter a valid URL")
     .optional()
     .or(z.literal("")),
+  pdf_url: z.string().optional(),
   duration: z.string().optional(),
 });
 
@@ -76,6 +80,7 @@ interface LessonItem {
   title: string;
   description?: string;
   video_url?: string;
+  pdf_url?: string;
   duration?: string;
 }
 
@@ -90,6 +95,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
   const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
 
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
@@ -116,6 +122,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
           title: les.title,
           description: les.description || "",
           video_url: les.video_url || "",
+          pdf_url: les.pdf_url || "",
           duration: les.duration || "",
         })),
       }));
@@ -159,6 +166,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
       title: "",
       description: "",
       video_url: "",
+      pdf_url: "",
       duration: "",
     },
   });
@@ -209,7 +217,8 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
   const handleAddLesson = (sectionId: string) => {
     setSelectedSection(sectionId);
     setEditingLesson(null);
-    resetLesson({ title: "", description: "", video_url: "", duration: "" });
+    setPdfFile(null);
+    resetLesson({ title: "", description: "", video_url: "", pdf_url: "", duration: "" });
     setLessonDialogOpen(true);
   };
 
@@ -220,10 +229,12 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
 
     setSelectedSection(sectionId);
     setEditingLesson(lessonId);
+    setPdfFile(null);
 
     setLessonValue("title", lesson.title);
     setLessonValue("description", lesson.description || "");
     setLessonValue("video_url", lesson.video_url || "");
+    setLessonValue("pdf_url", lesson.pdf_url || "");
     setLessonValue("duration", lesson.duration || "");
 
     setLessonDialogOpen(true);
@@ -233,17 +244,28 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
     if (!selectedSection) return;
     setSubmitting(true);
     try {
+      let finalPdfUrl = data.pdf_url || "";
+
+      if (pdfFile) {
+        const uploadedUrl = await uploadLessonPdf(pdfFile);
+        if (uploadedUrl) {
+          finalPdfUrl = uploadedUrl;
+        }
+      }
+
       await saveCourseLesson(selectedSection, {
         id: editingLesson || undefined,
         title: data.title,
         description: data.description,
         video_url: data.video_url,
+        pdf_url: finalPdfUrl,
         duration: data.duration,
       });
       await loadCurriculum();
       resetLesson();
       setEditingLesson(null);
       setSelectedSection(null);
+      setPdfFile(null);
       setLessonDialogOpen(false);
     } catch (err) {
       console.error("Failed to save lesson:", err);
@@ -286,7 +308,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
         <div>
           <CardTitle className="text-leaf-navy">Course Curriculum</CardTitle>
           <p className="mt-1 text-sm text-leaf-muted">
-            Organize the sections and lessons included in this course.
+            Organize sections, lessons, and downloadable PDF materials for this course.
           </p>
         </div>
 
@@ -391,9 +413,22 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
                             </span>
 
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-leaf-navy">
-                                {lesson.title}
-                              </p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-medium text-leaf-navy">
+                                  {lesson.title}
+                                </p>
+                                {lesson.pdf_url && (
+                                  <a
+                                    href={lesson.pdf_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 rounded bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                                  >
+                                    <FileText className="size-3 text-red-600" />
+                                    PDF Document
+                                  </a>
+                                )}
+                              </div>
 
                               {lesson.description && (
                                 <p className="mt-1 text-sm text-leaf-muted">
@@ -555,17 +590,18 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
             resetLesson();
             setEditingLesson(null);
             setSelectedSection(null);
+            setPdfFile(null);
           }
         }}
       >
-        <DialogContent className="bg-leaf-bg">
+        <DialogContent className="bg-leaf-bg max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editingLesson ? "Edit Course Lesson" : "Add Course Lesson"}
             </DialogTitle>
             <DialogDescription>
               {editingLesson
-                ? "Update this lesson."
+                ? "Update this lesson details or attached materials."
                 : "Add a new lesson to this section."}
             </DialogDescription>
           </DialogHeader>
@@ -583,7 +619,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
               </label>
               <Input
                 id="lesson-title"
-                placeholder="e.g. What is React?"
+                placeholder="e.g. React Fundamentals & Setup"
                 {...registerLesson("title")}
               />
               {lessonErrors.title && (
@@ -603,9 +639,51 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
               <Textarea
                 id="lesson-description"
                 placeholder="Describe what students will learn..."
-                rows={4}
+                rows={3}
                 {...registerLesson("description")}
               />
+            </div>
+
+            {/* PDF Document Upload / URL */}
+            <div className="space-y-2 rounded-lg border border-leaf-border p-3 bg-white">
+              <label className="text-sm font-medium text-leaf-navy flex items-center gap-1.5">
+                <FileText className="size-4 text-red-600" />
+                Lesson PDF Document
+              </label>
+
+              <div className="grid gap-2">
+                <div>
+                  <label className="text-xs text-leaf-muted mb-1 block">Upload PDF File</label>
+                  <Input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setPdfFile(file);
+                    }}
+                    className="cursor-pointer text-xs"
+                  />
+                  {pdfFile && (
+                    <p className="mt-1 text-xs text-leaf-green-dark font-medium flex items-center gap-1">
+                      <FileText className="size-3" /> Selected: {pdfFile.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="relative flex items-center py-1">
+                  <div className="flex-grow border-t border-gray-200"></div>
+                  <span className="flex-shrink mx-2 text-[10px] text-gray-400 uppercase">Or PDF URL</span>
+                  <div className="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <div>
+                  <Input
+                    id="pdf-url"
+                    placeholder="https://.../document.pdf"
+                    {...registerLesson("pdf_url")}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -613,7 +691,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
                 htmlFor="video-url"
                 className="text-sm font-medium text-leaf-navy"
               >
-                Video URL
+                Video URL (Optional)
               </label>
               <Input
                 id="video-url"
@@ -641,7 +719,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
               />
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 pt-2">
               <Button
                 type="button"
                 variant="outline"
