@@ -12,7 +12,6 @@ import {
   Pencil,
   Plus,
   Trash2,
-  Upload,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,7 +51,6 @@ import {
   getCourseCurriculum,
   saveCourseLesson,
   saveCourseSection,
-  uploadLessonPdf,
 } from "@/lib/queries/admin";
 
 const sectionSchema = z.object({
@@ -95,7 +93,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
   const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
 
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
@@ -217,7 +214,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
   const handleAddLesson = (sectionId: string) => {
     setSelectedSection(sectionId);
     setEditingLesson(null);
-    setPdfFile(null);
     resetLesson({ title: "", description: "", video_url: "", pdf_url: "", duration: "" });
     setLessonDialogOpen(true);
   };
@@ -229,7 +225,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
 
     setSelectedSection(sectionId);
     setEditingLesson(lessonId);
-    setPdfFile(null);
 
     setLessonValue("title", lesson.title);
     setLessonValue("description", lesson.description || "");
@@ -244,28 +239,18 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
     if (!selectedSection) return;
     setSubmitting(true);
     try {
-      let finalPdfUrl = data.pdf_url || "";
-
-      if (pdfFile) {
-        const uploadedUrl = await uploadLessonPdf(pdfFile);
-        if (uploadedUrl) {
-          finalPdfUrl = uploadedUrl;
-        }
-      }
-
       await saveCourseLesson(selectedSection, {
         id: editingLesson || undefined,
         title: data.title,
         description: data.description,
         video_url: data.video_url,
-        pdf_url: finalPdfUrl,
+        pdf_url: data.pdf_url,
         duration: data.duration,
       });
       await loadCurriculum();
       resetLesson();
       setEditingLesson(null);
       setSelectedSection(null);
-      setPdfFile(null);
       setLessonDialogOpen(false);
     } catch (err) {
       console.error("Failed to save lesson:", err);
@@ -308,7 +293,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
         <div>
           <CardTitle className="text-leaf-navy">Course Curriculum</CardTitle>
           <p className="mt-1 text-sm text-leaf-muted">
-            Organize sections, lessons, and downloadable PDF materials for this course.
+            Organize sections, lessons, and PDF materials for this course.
           </p>
         </div>
 
@@ -425,7 +410,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
                                     className="inline-flex items-center gap-1 rounded bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
                                   >
                                     <FileText className="size-3 text-red-600" />
-                                    PDF Document
+                                    PDF Attached
                                   </a>
                                 )}
                               </div>
@@ -590,7 +575,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
             resetLesson();
             setEditingLesson(null);
             setSelectedSection(null);
-            setPdfFile(null);
           }
         }}
       >
@@ -644,46 +628,19 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
               />
             </div>
 
-            {/* PDF Document Upload / URL */}
-            <div className="space-y-2 rounded-lg border border-leaf-border p-3 bg-white">
-              <label className="text-sm font-medium text-leaf-navy flex items-center gap-1.5">
+            <div className="space-y-2">
+              <label
+                htmlFor="pdf-url"
+                className="text-sm font-medium text-leaf-navy flex items-center gap-1.5"
+              >
                 <FileText className="size-4 text-red-600" />
-                Lesson PDF Document
+                PDF Document URL (Optional)
               </label>
-
-              <div className="grid gap-2">
-                <div>
-                  <label className="text-xs text-leaf-muted mb-1 block">Upload PDF File</label>
-                  <Input
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setPdfFile(file);
-                    }}
-                    className="cursor-pointer text-xs"
-                  />
-                  {pdfFile && (
-                    <p className="mt-1 text-xs text-leaf-green-dark font-medium flex items-center gap-1">
-                      <FileText className="size-3" /> Selected: {pdfFile.name}
-                    </p>
-                  )}
-                </div>
-
-                <div className="relative flex items-center py-1">
-                  <div className="flex-grow border-t border-gray-200"></div>
-                  <span className="flex-shrink mx-2 text-[10px] text-gray-400 uppercase">Or PDF URL</span>
-                  <div className="flex-grow border-t border-gray-200"></div>
-                </div>
-
-                <div>
-                  <Input
-                    id="pdf-url"
-                    placeholder="https://.../document.pdf"
-                    {...registerLesson("pdf_url")}
-                  />
-                </div>
-              </div>
+              <Input
+                id="pdf-url"
+                placeholder="https://.../document.pdf"
+                {...registerLesson("pdf_url")}
+              />
             </div>
 
             <div className="space-y-2">
