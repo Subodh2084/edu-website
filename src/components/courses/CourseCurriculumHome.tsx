@@ -63,51 +63,50 @@ export default function CourseCurriculum({
               </AccordionTrigger>
 
               <AccordionContent className="pb-4">
-                <div className="space-y-1 border-t border-leaf-border pt-2">
+                <div className="space-y-2 border-t border-leaf-border pt-3">
                   {section.lessons.map((lesson) => (
                     <div
                       key={lesson.id}
-                      className="flex items-center justify-between gap-4 rounded-md px-2 py-3"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-leaf-border/60 bg-white p-3.5 hover:border-leaf-green/40 transition-colors"
                     >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <FileText className="size-4 shrink-0 text-leaf-green-dark" />
-                         <Accordion>
-                          <AccordionItem>
-                            <AccordionTrigger className="text-left hover:no-underline">
-                               <span className="text-sm text-leaf-text">
-                               {lesson.title}
-                        </span>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              {lesson.description}
-                            </AccordionContent>
+                      <div className="flex min-w-0 items-start sm:items-center gap-3">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-leaf-soft text-leaf-green-dark">
+                          <FileText className="size-4" />
+                        </div>
 
-                         
-                          </AccordionItem>
-                         
-                         </Accordion>
-                         
-                        
-                        
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-leaf-navy">
+                              {lesson.title}
+                            </span>
+
+                            {lesson.pdf_url && (
+                              <a
+                                href={lesson.pdf_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border border-red-200 px-3 py-0.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                                title="View PDF Resource"
+                              >
+                                <FileText className="size-3 text-red-600" />
+                                PDF Resource
+                              </a>
+                            )}
+                          </div>
+
+                          {lesson.description && (
+                            <p className="mt-1 text-xs text-leaf-muted leading-relaxed">
+                              {lesson.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        {lesson.pdf_url && (
-                          <a
-                            href={lesson.pdf_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-md bg-red-50 border border-red-200 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                            title="View PDF Document"
-                          >
-                            <FileText className="size-3.5 text-red-600" />
-                            View PDF
-                          </a>
-                        )}
-                        <span className="shrink-0 text-xs text-leaf-muted">
+                      {lesson.duration && (
+                        <span className="shrink-0 text-xs font-medium text-leaf-muted sm:text-right">
                           {lesson.duration}
                         </span>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
