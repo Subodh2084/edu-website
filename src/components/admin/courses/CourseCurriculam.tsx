@@ -399,20 +399,9 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
 
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-medium text-leaf-navy">
+                                <p className="text-sm font-semibold text-leaf-navy">
                                   {lesson.title}
                                 </p>
-                                {lesson.pdf_url && (
-                                  <a
-                                    href={lesson.pdf_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 rounded bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                                  >
-                                    <FileText className="size-3 text-red-600" />
-                                    PDF Attached
-                                  </a>
-                                )}
                               </div>
 
                               {lesson.description && (
@@ -425,6 +414,34 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
                                 <p className="mt-1 text-xs text-leaf-muted">
                                   {lesson.duration}
                                 </p>
+                              )}
+                            </div>
+
+                            {/* Outside PDF Action Button */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {lesson.pdf_url ? (
+                                <a
+                                  href={lesson.pdf_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors shadow-sm"
+                                  title="Open PDF Document"
+                                >
+                                  <FileText className="size-3.5 text-red-600" />
+                                  View PDF
+                                </a>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditLesson(section.id, lesson.id)}
+                                  className="h-7 px-2.5 text-xs text-leaf-muted border-dashed hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+                                  title="Add PDF link to this lesson"
+                                >
+                                  <FileText className="mr-1 size-3 text-red-500" />
+                                  + PDF
+                                </Button>
                               )}
                             </div>
 
