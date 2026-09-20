@@ -166,25 +166,25 @@ export async function deleteTestimonial(testimonialId: string): Promise<boolean>
  * Upload student image to Supabase storage bucket
  */
 export async function uploadTestimonialImage(file: File): Promise<string | null> {
-  const supabase = createClient();
   try {
-    const ext = file.name.split(".").pop();
-    const fileName = `testimonial-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-    const filePath = `avatars/${fileName}`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "testimonials");
 
-    const { error: uploadError } = await supabase.storage
-      .from("testimonial-images")
-      .upload(filePath, file);
+    const res = await fetch("/api/admin/upload-image", {
+      method: "POST",
+      body: formData,
+    });
 
-    if (uploadError) {
-      console.error("Upload error:", uploadError);
+    const json = await res.json();
+    if (!res.ok || !json.url) {
+      console.error("Testimonial image upload error:", json.error || "Unknown error");
       return null;
     }
 
-    const { data } = supabase.storage.from("testimonial-images").getPublicUrl(filePath);
-    return data?.publicUrl || null;
+    return json.url;
   } catch (err) {
-    console.error("Failed to upload image:", err);
+    console.error("Failed to upload testimonial image:", err);
     return null;
   }
 }

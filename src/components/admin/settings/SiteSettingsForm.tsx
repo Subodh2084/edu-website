@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 import { initialSiteSettings } from "@/data/site-settings";
-import { getSiteSettings, saveSiteSettings } from "@/lib/queries/admin";
+import { getSiteSettings, saveSiteSettings, uploadImage } from "@/lib/queries/admin";
 import type { SiteSettings } from "@/types/site-settings";
 
 const urlOrEmpty = z
@@ -69,6 +69,8 @@ interface SiteSettingsFormProps {
 export default function SiteSettingsForm({
   initialData = initialSiteSettings,
 }: SiteSettingsFormProps) {
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [faviconFile, setFaviconFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(
     initialData.logo
   );
@@ -136,6 +138,7 @@ export default function SiteSettingsForm({
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setLogoFile(file);
       setLogoPreview(URL.createObjectURL(file));
     }
   };
@@ -143,6 +146,7 @@ export default function SiteSettingsForm({
   const handleFaviconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setFaviconFile(file);
       setFaviconPreview(URL.createObjectURL(file));
     }
   };
@@ -150,10 +154,23 @@ export default function SiteSettingsForm({
   const onSubmit = async (data: SiteSettingsFormValues) => {
     setErrorMessage(null);
     try {
+      let finalLogo = logoPreview;
+      let finalFavicon = faviconPreview;
+
+      if (logoFile) {
+        const uploadedLogo = await uploadImage(logoFile, "branding");
+        if (uploadedLogo) finalLogo = uploadedLogo;
+      }
+
+      if (faviconFile) {
+        const uploadedFavicon = await uploadImage(faviconFile, "branding");
+        if (uploadedFavicon) finalFavicon = uploadedFavicon;
+      }
+
       const payload: Partial<SiteSettings> = {
         company_name: data.company_name,
-        logo: logoPreview,
-        favicon: faviconPreview,
+        logo: finalLogo && !finalLogo.startsWith("blob:") ? finalLogo : null,
+        favicon: finalFavicon && !finalFavicon.startsWith("blob:") ? finalFavicon : null,
         email: data.email || null,
         phone: data.phone || null,
         whatsapp: data.whatsapp || null,

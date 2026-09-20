@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { getCategories, getCourseById, saveCourse } from "@/lib/queries/admin";
+import { getCategories, getCourseById, saveCourse, uploadImage } from "@/lib/queries/admin";
 import type { Category } from "@/types/category";
 
 const courseSchema = z.object({
@@ -89,6 +89,7 @@ export default function CourseForm({
   courseId,
 }: CourseFormProps) {
   const router = useRouter();
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -157,12 +158,21 @@ export default function CourseForm({
 
     if (!file) return;
 
+    setThumbnailFile(file);
     setThumbnail(URL.createObjectURL(file));
   };
 
   const onSubmit = async (data: CourseFormValues) => {
     setIsSaving(true);
     setErrorMessage(null);
+
+    let finalThumbnail = thumbnail;
+    if (thumbnailFile) {
+      const uploaded = await uploadImage(thumbnailFile, "thumbnails");
+      if (uploaded) {
+        finalThumbnail = uploaded;
+      }
+    }
 
     const { data: saved, error } = await saveCourse({
       id: courseId,
@@ -180,7 +190,7 @@ export default function CourseForm({
       featured: data.featured,
       popular: data.popular,
       thumbnail:
-        thumbnail && !thumbnail.startsWith("blob:") ? thumbnail : undefined,
+        finalThumbnail && !finalThumbnail.startsWith("blob:") ? finalThumbnail : undefined,
     });
 
     setIsSaving(false);

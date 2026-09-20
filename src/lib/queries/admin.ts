@@ -770,3 +770,30 @@ export async function deleteContactMessage(id: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Universal image uploader for admin (thumbnails, site logos, favicons, etc.)
+ */
+export async function uploadImage(file: File, folder: string = "images"): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", folder);
+
+    const res = await fetch("/api/admin/upload-image", {
+      method: "POST",
+      body: formData,
+    });
+
+    const json = await res.json();
+    if (!res.ok || !json.url) {
+      console.error("Image upload API error:", json.error || "Unknown error");
+      return null;
+    }
+
+    return json.url;
+  } catch (err) {
+    console.error("Failed to upload image:", err);
+    return null;
+  }
+}
