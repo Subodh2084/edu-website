@@ -102,9 +102,9 @@ export default async function CourseDetailsPage({
           </div>
         )}
 
-        {sections.length > 0 && (
+        {(sections.length > 0 || (course as any).syllabus_pdf_url || (course as any).pdf_url) && (
           <div className="max-w-4xl px-4 sm:px-6 lg:px-15">
-            <CourseCurriculum sections={sections} />
+            <CourseCurriculum sections={sections} pdf_url={(course as any).syllabus_pdf_url || (course as any).pdf_url} />
           </div>
         )}
 

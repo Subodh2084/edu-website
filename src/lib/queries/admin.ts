@@ -131,39 +131,50 @@ export async function getAdminCourses(): Promise<AdminCourseItem[]> {
  * Fetch single course by ID with Category details
  */
 export async function getCourseById(courseId: string): Promise<AdminCourseItem | null> {
-  const supabase = createClient();
+  let courseObj: any = null;
   try {
-    const { data: course, error } = await supabase
-      .from("courses")
-      .select("*")
-      .eq("id", courseId)
-      .single();
-
-    if (error || !course) {
-      console.error("Error fetching course by ID:", error);
-      return null;
-    }
-
-    let category_name = "Uncategorized";
-    if (course.category_id) {
-      const { data: category } = await supabase
-        .from("course_categories")
-        .select("name")
-        .eq("id", course.category_id)
-        .maybeSingle();
-      if (category?.name) {
-        category_name = category.name;
+    const res = await fetch(`/api/admin/courses?id=${encodeURIComponent(courseId)}`, { cache: "no-store" });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.course) {
+        courseObj = json.course;
       }
     }
-
-    return {
-      ...(course as any),
-      category_name,
-    };
   } catch (err) {
-    console.error("Error fetching course by ID:", err);
-    return null;
+    console.warn("Failed to fetch course via admin API, trying client fallback:", err);
   }
+
+  if (!courseObj) {
+    const supabase = createClient();
+    try {
+      const { data: course, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("id", courseId)
+        .single();
+
+      if (error || !course) {
+        console.error("Error fetching course by ID:", error);
+        return null;
+      }
+      courseObj = course;
+    } catch (err) {
+      console.error("Error fetching course by ID:", err);
+      return null;
+    }
+  }
+
+  if (courseObj) {
+    if (!courseObj.syllabus_pdf_url && !courseObj.pdf_url && courseObj.description) {
+      const match = courseObj.description.match(/<!-- SYLLABUS_PDF_URL:(.*?) -->/);
+      if (match && match[1]) {
+        courseObj.syllabus_pdf_url = match[1];
+        courseObj.pdf_url = match[1];
+      }
+    }
+  }
+
+  return courseObj as AdminCourseItem;
 }
 
 /**
@@ -638,32 +649,23 @@ export async function uploadLessonPdf(file: File): Promise<string | null> {
  * Upload 1 PDF file for a course to Supabase Storage and update the course's syllabus_pdf_url
  */
 export async function uploadCoursePdf(courseId: string, file: File): Promise<string | null> {
-  const supabase = createClient();
   try {
-    const ext = file.name.split(".").pop() || "pdf";
-    const fileName = `course-syllabus-${Date.now()}-${Math.random().toString(36).substring(2, 6)}.${ext}`;
-    const filePath = `syllabi/${fileName}`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("courseId", courseId);
 
-    const { error: uploadError } = await supabase.storage
-      .from("testimonial-images")
-      .upload(filePath, file, { upsert: true });
+    const res = await fetch("/api/admin/upload-pdf", {
+      method: "POST",
+      body: formData,
+    });
 
-    if (uploadError) {
-      console.error("Course PDF upload error:", uploadError);
+    const json = await res.json();
+    if (!res.ok || !json.url) {
+      console.error("Course PDF upload API error:", json.error || "Unknown error");
       return null;
     }
 
-    const { data } = supabase.storage.from("testimonial-images").getPublicUrl(filePath);
-    const pdfUrl = data?.publicUrl || null;
-
-    if (pdfUrl) {
-      await supabase
-        .from("courses")
-        .update({ syllabus_pdf_url: pdfUrl } as any)
-        .eq("id", courseId);
-    }
-
-    return pdfUrl;
+    return json.url;
   } catch (err) {
     console.error("Failed to upload course PDF:", err);
     return null;

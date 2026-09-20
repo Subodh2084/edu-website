@@ -39,7 +39,7 @@ export default function CourseFilters({
           className="pl-9 bg-white"
         />
       </div>
-      <Select value={status} onValueChange={onStatusChange}>
+      <Select value={status} onValueChange={(val) => val && onStatusChange(val)}>
         <SelectTrigger className="w-full sm:w-40 bg-white">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
@@ -51,7 +51,7 @@ export default function CourseFilters({
           <SelectItem value="archived">Archived</SelectItem>
         </SelectContent>
       </Select>
-      <Select value={level} onValueChange={onLevelChange}>
+      <Select value={level} onValueChange={(val) => val && onLevelChange(val)}>
         <SelectTrigger className="w-full sm:w-40 bg-white">
           <SelectValue placeholder="Level" />
         </SelectTrigger>

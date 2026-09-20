@@ -40,12 +40,16 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
       .eq("status", "published")
       .maybeSingle();
 
-    if (error || !data) {
-      console.error("Supabase Error fetching course by slug:", error);
-      return null;
+    const courseObj = data as any;
+    if (!courseObj.syllabus_pdf_url && !courseObj.pdf_url && courseObj.description) {
+      const match = courseObj.description.match(/<!-- SYLLABUS_PDF_URL:(.*?) -->/);
+      if (match && match[1]) {
+        courseObj.syllabus_pdf_url = match[1];
+        courseObj.pdf_url = match[1];
+      }
     }
 
-    return data as unknown as Course;
+    return courseObj as Course;
   } catch (err) {
     console.error("Error fetching course by slug:", err);
     return null;

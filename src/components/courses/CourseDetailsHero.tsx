@@ -102,6 +102,7 @@ export default function CourseDetailsHero({
               lg:right-10
               lg:top-24
               lg:mt-0
+              z-20
             "
           >
             {/* Video or Thumbnail */}

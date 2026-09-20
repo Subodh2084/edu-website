@@ -10,42 +10,105 @@ function slugify(value: string) {
     .replace(/-+/g, "-");
 }
 
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    const supabase = createAdminClient();
+
+    if (id) {
+      const { data, error } = await (supabase.from("courses") as any)
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ course: data });
+    }
+
+    const { data, error } = await (supabase.from("courses") as any)
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ courses: data });
+  } catch (err: unknown) {
+    const error = err as Error;
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
 
-    if (!payload?.title) {
-      return NextResponse.json({ error: "Course title is required." }, { status: 400 });
+    if (!payload?.id && !payload?.title) {
+      return NextResponse.json({ error: "Course title is required for creation." }, { status: 400 });
     }
 
     const supabase = createAdminClient();
-    const slug = slugify(payload.slug || payload.title);
 
-    const courseData = {
-      title: payload.title,
-      slug,
-      short_description: payload.short_description || "",
-      description: payload.description || "",
-      category_id: payload.category_id || null,
-      preview_video_url: payload.preview_video_url || null,
-      price: payload.price || 0,
-      discount_price: payload.discount_price || null,
-      level: payload.level || "beginner",
-      duration: payload.duration || "1 Month",
-      language: payload.language || "English",
-      status: payload.status || "draft",
-      featured: payload.featured ?? false,
-      popular: payload.popular ?? false,
-      ...(payload.thumbnail ? { thumbnail: payload.thumbnail } : {}),
-    };
-
+    // Partial update mode (e.g. updating syllabus_pdf_url or thumbnail)
     if (payload.id) {
-      const { data, error } = await supabase
-        .from("courses")
-        .update(courseData)
+      const updateData: Record<string, any> = {};
+
+      if (payload.title) {
+        updateData.title = payload.title;
+        updateData.slug = slugify(payload.slug || payload.title);
+      }
+      if (payload.short_description !== undefined) updateData.short_description = payload.short_description;
+      if (payload.description !== undefined) updateData.description = payload.description;
+      if (payload.category_id !== undefined) updateData.category_id = payload.category_id;
+      if (payload.preview_video_url !== undefined) updateData.preview_video_url = payload.preview_video_url;
+      if (payload.syllabus_pdf_url !== undefined) updateData.syllabus_pdf_url = payload.syllabus_pdf_url;
+      if (payload.pdf_url !== undefined) updateData.pdf_url = payload.pdf_url;
+      if (payload.price !== undefined) updateData.price = payload.price;
+      if (payload.discount_price !== undefined) updateData.discount_price = payload.discount_price;
+      if (payload.level !== undefined) updateData.level = payload.level;
+      if (payload.duration !== undefined) updateData.duration = payload.duration;
+      if (payload.language !== undefined) updateData.language = payload.language;
+      if (payload.status !== undefined) updateData.status = payload.status;
+      if (payload.featured !== undefined) updateData.featured = payload.featured;
+      if (payload.popular !== undefined) updateData.popular = payload.popular;
+      if (payload.thumbnail) updateData.thumbnail = payload.thumbnail;
+
+      let { data, error } = await (supabase.from("courses") as any)
+        .update(updateData)
         .eq("id", payload.id)
         .select()
         .single();
+
+      // If updating failed and payload has a PDF url, try fallback to alternative column name
+      if (error && (payload.syllabus_pdf_url || payload.pdf_url)) {
+        const fallbackData = { ...updateData };
+        const pdfValue = payload.syllabus_pdf_url || payload.pdf_url;
+        
+        // Swap column key
+        if ("syllabus_pdf_url" in fallbackData) {
+          delete fallbackData.syllabus_pdf_url;
+          fallbackData.pdf_url = pdfValue;
+        } else if ("pdf_url" in fallbackData) {
+          delete fallbackData.pdf_url;
+          fallbackData.syllabus_pdf_url = pdfValue;
+        }
+
+        const retry = await (supabase.from("courses") as any)
+          .update(fallbackData)
+          .eq("id", payload.id)
+          .select()
+          .single();
+
+        if (!retry.error) {
+          data = retry.data;
+          error = null;
+        }
+      }
 
       if (error) {
         console.error("Error updating course:", error.message, error.code, error.details);
@@ -58,8 +121,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ data });
     }
 
-    const { data, error } = await supabase
-      .from("courses")
+    // Full creation mode
+    const slug = slugify(payload.slug || payload.title);
+    const courseData = {
+      title: payload.title,
+      slug,
+      short_description: payload.short_description || "",
+      description: payload.description || "",
+      category_id: payload.category_id || null,
+      preview_video_url: payload.preview_video_url || null,
+      syllabus_pdf_url: payload.syllabus_pdf_url || payload.pdf_url || null,
+      price: payload.price || 0,
+      discount_price: payload.discount_price || null,
+      level: payload.level || "beginner",
+      duration: payload.duration || "1 Month",
+      language: payload.language || "English",
+      status: payload.status || "draft",
+      featured: payload.featured ?? false,
+      popular: payload.popular ?? false,
+      ...(payload.thumbnail ? { thumbnail: payload.thumbnail } : {}),
+    };
+
+    const { data, error } = await (supabase.from("courses") as any)
       .insert(courseData)
       .select()
       .single();
