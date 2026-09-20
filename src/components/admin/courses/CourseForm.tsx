@@ -205,7 +205,7 @@ export default function CourseForm({
   };
 
   return (
-    <Card>
+    <Card className="bg-white shadow-xl">
       <CardHeader>
         <CardTitle>Course Information</CardTitle>
       </CardHeader>
@@ -300,12 +300,19 @@ export default function CourseForm({
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="Select category">
+                    {categories.find(
+                      (category) => category.id === watch("category_id"),
+                    )?.name || "Select category"}
+                  </SelectValue>
                 </SelectTrigger>
 
                 <SelectContent>
                   {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem
+                      key={category.id}
+                      value={category.id}
+                    >
                       {category.name}
                     </SelectItem>
                   ))}
@@ -318,8 +325,6 @@ export default function CourseForm({
                 </p>
               )}
             </div>
-
-            {/* Preview Video */}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">
@@ -337,8 +342,6 @@ export default function CourseForm({
                 </p>
               )}
             </div>
-
-            {/* Price */}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">
@@ -377,8 +380,6 @@ export default function CourseForm({
                 </p>
               )}
             </div>
-
-            {/* Level */}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">
@@ -425,8 +426,6 @@ export default function CourseForm({
               )}
             </div>
 
-            {/* Duration */}
-
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">
                 Duration
@@ -443,8 +442,6 @@ export default function CourseForm({
                 </p>
               )}
             </div>
-
-            {/* Language */}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">

@@ -16,9 +16,10 @@ export default function Home() {
       <FeaturedCourses />
       <WhyChooseUs />
       <PopularCourses />
+       <CTA />
       <Testimonials />
       <FAQSection />
-      <CTA />
+     
     </>
   );
 }

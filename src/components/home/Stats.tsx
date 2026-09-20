@@ -21,14 +21,13 @@ export default function Stats() {
 
         return (
           <div key={stat.label} className="flex shrink-0 items-center gap-x-4 sm:gap-x-6 lg:gap-x-8">
-            <div className="flex items-center gap-3">
-              <Icon className="size-5 shrink-0 text-leaf-green-dark" />
-
+            <div className="flex flex-col items-center justify-center">
+              <Icon className="size-7 shrink-0 text-leaf-green-dark" />
               <div className="whitespace-nowrap">
-                <p className="text-base font-bold text-leaf-navy sm:text-lg">
+                <p className="text-base text-center font-bold text-leaf-navy">
                   {stat.value}
                 </p>
-                <p className="text-xs font-semibold text-leaf-navy sm:text-sm">
+                <p className="text-xs text-center font-semibold text-leaf-navy sm:text-sm">
                   {stat.label}
                 </p>
               </div>

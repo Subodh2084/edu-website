@@ -12,7 +12,6 @@ export default function SiteSettingsPage() {
           Manage your website and company information.
         </p>
       </div>
-
       <SiteSettingsForm />
     </div>
   );

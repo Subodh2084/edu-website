@@ -28,16 +28,24 @@ export default function CourseOverview({ courseId }: CourseOverviewProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="text-leaf-navy">
-          Course Overview
-        </CardTitle>
-        <Link className="flex items-center gap-2 text-white bg-leaf-green-dark rounded px-3 py-1 font-bold" href={`/admin/courses/${courseId}/edit`}>
-         <Pencil size={10}/> Course
-      </Link>
+    <Card className="border-leaf-border/80 shadow-xs">
+      <CardHeader className="flex flex-col gap-3 border-b border-leaf-border/50 pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <CardTitle className="text-lg font-bold text-leaf-navy">
+            Course Overview
+          </CardTitle>
+          <p className="mt-1 text-xs text-leaf-muted">
+            High-level metadata, pricing details, and course summaries.
+          </p>
+        </div>
+        <Link
+          className="inline-flex items-center gap-1.5 rounded-lg bg-leaf-green-dark px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-leaf-green transition-all shadow-xs"
+          href={`/admin/courses/${courseId}/edit`}
+        >
+          <Pencil className="size-3.5" /> Edit Details
+        </Link>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 pt-6">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="text-sm text-leaf-muted">Category</p>

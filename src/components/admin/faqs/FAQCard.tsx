@@ -123,8 +123,9 @@ export default function FAQCard({ faq, onDelete }: FAQCardProps) {
       <AlertDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
+
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="border-leaf-border bg-white" >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-leaf-navy">
               Delete FAQ?

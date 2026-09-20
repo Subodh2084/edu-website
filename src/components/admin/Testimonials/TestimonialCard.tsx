@@ -123,11 +123,10 @@ export default function TestimonialCard({
               {Array.from({ length: 5 }).map((_, index) => (
                 <Star
                   key={index}
-                  className={`size-4 ${
-                    index < testimonial.rating
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-leaf-border"
-                  }`}
+                  className={`size-4 ${index < testimonial.rating
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-leaf-border"
+                    }`}
                 />
               ))}
             </div>
@@ -174,7 +173,7 @@ export default function TestimonialCard({
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="border-leaf-border bg-white">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-leaf-navy">
               Delete Testimonial?

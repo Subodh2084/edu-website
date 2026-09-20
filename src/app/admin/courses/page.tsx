@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
 import CourseFilters from "@/components/admin/courses/CourseFilter";
 import CourseHeader from "@/components/admin/courses/CourseHeader";
 import CourseTable from "@/components/admin/courses/CourseTable";
+
 import {
   deleteCourse,
   getAdminCourses,
@@ -13,13 +15,16 @@ import {
 export default function CoursesPage() {
   const [courses, setCourses] = useState<AdminCourseItem[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [level, setLevel] = useState("all");
 
   const loadCourses = async () => {
     setLoading(true);
+
     const data = await getAdminCourses();
+
     setCourses(data);
     setLoading(false);
   };
@@ -36,19 +41,24 @@ export default function CoursesPage() {
         !query ||
         course.title.toLowerCase().includes(query) ||
         (course.category_name || "").toLowerCase().includes(query);
-      const matchesStatus = status === "all" || course.status === status;
-      const matchesLevel = level === "all" || course.level === level;
+
+      const matchesStatus =
+        status === "all" || course.status === status;
+
+      const matchesLevel =
+        level === "all" || course.level === level;
+
       return matchesSearch && matchesStatus && matchesLevel;
     });
   }, [courses, search, status, level]);
 
   const handleDelete = async (id: string) => {
-    const confirmed = window.confirm("Delete this course? This cannot be undone.");
-    if (!confirmed) return;
-
     const success = await deleteCourse(id);
+
     if (success) {
-      setCourses((current) => current.filter((course) => course.id !== id));
+      setCourses((current) =>
+        current.filter((course) => course.id !== id),
+      );
     } else {
       window.alert("Failed to delete course. Please try again.");
     }
@@ -57,6 +67,7 @@ export default function CoursesPage() {
   return (
     <div className="space-y-6">
       <CourseHeader />
+
       <CourseFilters
         search={search}
         onSearchChange={setSearch}
@@ -65,6 +76,7 @@ export default function CoursesPage() {
         level={level}
         onLevelChange={setLevel}
       />
+
       <CourseTable
         courses={filteredCourses}
         loading={loading}
