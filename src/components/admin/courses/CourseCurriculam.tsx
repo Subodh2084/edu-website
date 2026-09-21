@@ -64,12 +64,6 @@ const sectionSchema = z.object({
 const lessonSchema = z.object({
   title: z.string().min(3, "Lesson title must be at least 3 characters"),
   description: z.string().optional(),
-  video_url: z
-    .string()
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
-  pdf_url: z.string().optional(),
   duration: z.string().optional(),
 });
 
@@ -80,8 +74,6 @@ interface LessonItem {
   id: string;
   title: string;
   description?: string;
-  video_url?: string;
-  pdf_url?: string;
   duration?: string;
 }
 
@@ -121,8 +113,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
           id: les.id,
           title: les.title,
           description: les.description || "",
-          video_url: les.video_url || "",
-          pdf_url: les.pdf_url || "",
           duration: les.duration || "",
         })),
       }));
@@ -191,8 +181,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
     defaultValues: {
       title: "",
       description: "",
-      video_url: "",
-      pdf_url: "",
       duration: "",
     },
   });
@@ -243,7 +231,7 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
   const handleAddLesson = (sectionId: string) => {
     setSelectedSection(sectionId);
     setEditingLesson(null);
-    resetLesson({ title: "", description: "", video_url: "", pdf_url: "", duration: "" });
+    resetLesson({ title: "", description: "", duration: "" });
     setLessonDialogOpen(true);
   };
 
@@ -257,8 +245,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
 
     setLessonValue("title", lesson.title);
     setLessonValue("description", lesson.description || "");
-    setLessonValue("video_url", lesson.video_url || "");
-    setLessonValue("pdf_url", lesson.pdf_url || "");
     setLessonValue("duration", lesson.duration || "");
 
     setLessonDialogOpen(true);
@@ -272,8 +258,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
         id: editingLesson || undefined,
         title: data.title,
         description: data.description,
-        video_url: data.video_url,
-        pdf_url: data.pdf_url,
         duration: data.duration,
       });
       await loadCurriculum();
@@ -694,25 +678,6 @@ export default function CourseCurriculum({ courseId }: { courseId: string }) {
                 rows={3}
                 {...registerLesson("description")}
               />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="video-url"
-                className="text-sm font-medium text-leaf-navy"
-              >
-                Video URL (Optional)
-              </label>
-              <Input
-                id="video-url"
-                placeholder="https://..."
-                {...registerLesson("video_url")}
-              />
-              {lessonErrors.video_url && (
-                <p className="text-sm text-red-500">
-                  {lessonErrors.video_url.message}
-                </p>
-              )}
             </div>
 
             <div className="space-y-2">

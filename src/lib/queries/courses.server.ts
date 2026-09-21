@@ -41,6 +41,7 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
       .maybeSingle();
 
     const courseObj = data as any;
+    if (!courseObj) return null;
     if (!courseObj.syllabus_pdf_url && !courseObj.pdf_url && courseObj.description) {
       const match = courseObj.description.match(/<!-- SYLLABUS_PDF_URL:(.*?) -->/);
       if (match && match[1]) {

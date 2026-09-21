@@ -545,35 +545,44 @@ export async function getCourseCurriculum(courseId: string) {
 export const getCourseCurriculumData = getCourseCurriculum;
 
 export async function saveCourseSection(courseId: string, section: { id?: string; title: string; description?: string }) {
-  const supabase = createClient();
-  const secData = {
-    course_id: courseId,
-    title: section.title,
-    description: section.description || null,
-  };
-
-  if (section.id) {
-    const { data, error } = await supabase
-      .from("course_sections")
-      .update(secData)
-      .eq("id", section.id)
-      .select()
-      .single();
-    return error ? null : data;
-  } else {
-    const { data, error } = await supabase
-      .from("course_sections")
-      .insert(secData)
-      .select()
-      .single();
-    return error ? null : data;
+  try {
+    const res = await fetch("/api/admin/curriculum/sections", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        courseId,
+        id: section.id,
+        title: section.title,
+        description: section.description,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.error("Section save error:", json.error);
+      return null;
+    }
+    return json.data;
+  } catch (err) {
+    console.error("Failed to save section:", err);
+    return null;
   }
 }
 
 export async function deleteCourseSection(sectionId: string) {
-  const supabase = createClient();
-  const { error } = await supabase.from("course_sections").delete().eq("id", sectionId);
-  return !error;
+  try {
+    const res = await fetch(`/api/admin/curriculum/sections?id=${sectionId}`, {
+      method: "DELETE",
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.error("Section delete error:", json.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Failed to delete section:", err);
+    return false;
+  }
 }
 
 export async function saveCourseLesson(
@@ -582,39 +591,32 @@ export async function saveCourseLesson(
     id?: string;
     title: string;
     description?: string;
-    video_url?: string;
-    pdf_url?: string;
     duration?: string;
     is_preview?: boolean;
   }
 ) {
-  const supabase = createClient();
-  const lessonData: any = {
-    section_id: sectionId,
-    title: lesson.title,
-    description: lesson.description || null,
-    video_url: lesson.video_url || null,
-    pdf_url: lesson.pdf_url || null,
-    duration: lesson.duration || "15 mins",
-    is_preview: lesson.is_preview ?? false,
-    lesson_type: lesson.pdf_url ? "pdf" : "video",
-  };
-
-  if (lesson.id) {
-    const { data, error } = await supabase
-      .from("course_lessons")
-      .update(lessonData)
-      .eq("id", lesson.id)
-      .select()
-      .single();
-    return error ? null : data;
-  } else {
-    const { data, error } = await supabase
-      .from("course_lessons")
-      .insert(lessonData)
-      .select()
-      .single();
-    return error ? null : data;
+  try {
+    const res = await fetch("/api/admin/curriculum/lessons", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sectionId,
+        id: lesson.id,
+        title: lesson.title,
+        description: lesson.description,
+        duration: lesson.duration,
+        is_preview: lesson.is_preview,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.error("Lesson save error:", json.error);
+      return null;
+    }
+    return json.data;
+  } catch (err) {
+    console.error("Failed to save lesson:", err);
+    return null;
   }
 }
 
@@ -673,9 +675,20 @@ export async function uploadCoursePdf(courseId: string, file: File): Promise<str
 }
 
 export async function deleteCourseLesson(lessonId: string) {
-  const supabase = createClient();
-  const { error } = await supabase.from("course_lessons").delete().eq("id", lessonId);
-  return !error;
+  try {
+    const res = await fetch(`/api/admin/curriculum/lessons?id=${lessonId}`, {
+      method: "DELETE",
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.error("Lesson delete error:", json.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Failed to delete lesson:", err);
+    return false;
+  }
 }
 
 export async function getCourseOptions(): Promise<{ id: string; title: string }[]> {

@@ -69,7 +69,6 @@ export default async function CourseDetailsPage({
       title: l.title,
       duration: l.duration || "",
       description: l.description || undefined,
-      pdf_url: l.pdf_url || undefined,
     })),
   }));
 
