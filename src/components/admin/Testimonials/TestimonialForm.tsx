@@ -148,6 +148,9 @@ export default function TestimonialForm({
   const isActive = watch("is_active");
   const currentRating = watch("rating");
   const currentCourseId = watch("course_id");
+  const selectedCourseTitle = currentCourseId
+    ? coursesList.find((course) => course.id === currentCourseId)?.title
+    : undefined;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,9 +194,11 @@ export default function TestimonialForm({
 
       router.push("/admin/testimonials");
       router.refresh();
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error submitting testimonial:", err);
-      setSubmitError(err.message || "An unexpected error occurred.");
+      setSubmitError(
+        err instanceof Error ? err.message : "An unexpected error occurred."
+      );
     }
   };
 
@@ -270,7 +275,9 @@ export default function TestimonialForm({
                 }
               >
                 <SelectTrigger className="w-full border-leaf-border bg-white">
-                  <SelectValue placeholder="Select Course" />
+                  <SelectValue placeholder="None / General">
+                    {selectedCourseTitle || "None / General"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="none">None / General</SelectItem>

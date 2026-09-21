@@ -3,7 +3,7 @@ import WhyUsFeatures from "./WhyUsFeatures";
 
 export default function WhyChooseUs() {
   return (
-    <section className="overflow-hidden bg-leaf-bg py-20 sm:py-24">
+    <section className="overflow-hidden py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
 
         <div className="grid items-center gap-10 lg:grid-cols-[0.8fr_1.4fr_0.8fr] lg:gap-8">

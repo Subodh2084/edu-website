@@ -149,7 +149,7 @@ export default function CourseDetailsHero({
               </div> */}
 
               <Link
-                href={`/courses/${course.slug}/enroll`}
+                href={`/contact`}
                 className="
                   mt-5
                   flex

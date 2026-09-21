@@ -141,6 +141,9 @@ export default function FAQForm({ faqId }: FAQFormProps) {
   const isActive = watch("is_active");
   const currentCategory = watch("category");
   const currentCourseId = watch("course_id");
+  const selectedCourseTitle = currentCourseId
+    ? coursesList.find((course) => course.id === currentCourseId)?.title
+    : undefined;
 
   const onSubmit = async (data: FAQFormValues) => {
     setSubmitError(null);
@@ -162,9 +165,11 @@ export default function FAQForm({ faqId }: FAQFormProps) {
 
       router.push("/admin/faqs");
       router.refresh();
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error submitting FAQ:", err);
-      setSubmitError(err.message || "An unexpected error occurred.");
+      setSubmitError(
+        err instanceof Error ? err.message : "An unexpected error occurred."
+      );
     }
   };
 
@@ -265,7 +270,9 @@ export default function FAQForm({ faqId }: FAQFormProps) {
                 }
               >
                 <SelectTrigger className="w-full border-leaf-border bg-white">
-                  <SelectValue placeholder="General / All Courses" />
+                  <SelectValue placeholder="General / All Courses">
+                    {selectedCourseTitle || "General / All Courses"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="none">General / All Courses</SelectItem>

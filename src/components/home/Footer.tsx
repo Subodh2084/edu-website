@@ -106,8 +106,8 @@ export default function Footer() {
                 <Image
                   src={logo || "/companyLogo/companyLogo.png"}
                   alt={companyName}
-                  width={130}
-                  height={48}
+                  width={50}
+                  height={50}
                   style={{ width: "auto", height: "auto" }}
                   className="footer-logo-img"
                   unoptimized={

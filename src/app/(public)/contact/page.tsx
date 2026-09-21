@@ -25,6 +25,10 @@ export default function ContactPage() {
   const phone = settings?.phone || "+977-9766715768";
   const whatsapp = settings?.whatsapp || "+9779800000000";
   const address = settings?.address || "Siddharthanagar, Rupandehi, Nepal";
+  const googleMapsUrl =
+    settings?.google_maps_url ||
+    "https://maps.google.com/?q=Siddharthanagar,+Rupandehi,+Nepal";
+  const googleMapsEmbedUrl = `/api/maps/embed?url=${encodeURIComponent(googleMapsUrl)}`;
   const officeHours = settings?.office_hours || "Sunday – Friday: 10:00 AM – 6:00 PM";
 
   const contactInfo = [
@@ -146,8 +150,33 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
+
+          <section className="mt-12 overflow-hidden rounded-2xl border border-leaf-border bg-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-leaf-border px-6 py-5 sm:px-8">
+              <div>
+                <h2 className="text-xl font-bold text-leaf-navy">Find Us</h2>
+                <p className="mt-1 text-sm text-leaf-muted">{address}</p>
+              </div>
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-leaf-green-dark transition-colors hover:text-leaf-green"
+              >
+                Open in Google Maps
+              </a>
+            </div>
+            <iframe
+              title="Our location on Google Maps"
+              src={googleMapsEmbedUrl}
+              className="h-80 w-full border-0 sm:h-96"
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </section>
         </div>
       </section>
     </main>
   );
-}
+}
