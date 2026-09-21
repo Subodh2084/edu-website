@@ -5,7 +5,7 @@ import type { FAQ } from "@/types/faq";
 import type { Testimonial } from "@/types/testimonial";
 import type { SiteSettings } from "@/types/site-settings";
 import { getSiteSettings } from "./site-settings";
-
+import { createAdminClient } from "@/lib/supabase/admin";
 export { getSiteSettings };
 
 export interface AdminStats {
@@ -724,14 +724,15 @@ export interface ContactMessageItem {
 }
 
 export async function getContactMessages(): Promise<ContactMessageItem[]> {
-  const supabase = createClient();
+  const supabase = createAdminClient();
+
   try {
     const { data, error } = await supabase
       .from("contact_messages")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error || !data) {
+    if (error) {
       console.error("Error fetching contact messages:", error);
       return [];
     }
@@ -743,15 +744,39 @@ export async function getContactMessages(): Promise<ContactMessageItem[]> {
   }
 }
 
+export async function getContactMessageById(
+  id: string
+): Promise<ContactMessageItem | null> {
+  const supabase = createAdminClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("contact_messages")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching contact message:", error);
+      return null;
+    }
+
+    return data as ContactMessageItem;
+  } catch (err) {
+    console.error("Error fetching contact message:", err);
+    return null;
+  }
+}
+
 export async function updateContactMessageStatus(
   id: string,
   status: ContactMessageItem["status"]
 ): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = createAdminClient();
   try {
     const { error } = await supabase
       .from("contact_messages")
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status, updated_at: new Date().toISOString() } as never)
       .eq("id", id);
     return !error;
   } catch (err) {
@@ -761,7 +786,7 @@ export async function updateContactMessageStatus(
 }
 
 export async function deleteContactMessage(id: string): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = createAdminClient();
   try {
     const { error } = await supabase.from("contact_messages").delete().eq("id", id);
     return !error;

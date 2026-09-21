@@ -20,10 +20,10 @@ export default function PopularCourses() {
   return (
     <section id="popular-courses" className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="mb-10 flex items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-leaf-green-dark">
+            
+            <p className="mb-3 border-l-3 border-leaf-green-dark p-1 text-sm font-semibold uppercase tracking-wider text-leaf-green-dark">
               Our Popular Courses
             </p>
 

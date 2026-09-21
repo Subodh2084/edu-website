@@ -21,10 +21,11 @@ export default function Hero() {
 
             <h1 className="mt-6 text-5xl font-extrabold leading-[1.02] tracking-[-0.035em] text-leaf-navy sm:text-6xl lg:text-[76px]">
               Learn <span className="text-leaf-green-dark">Skills</span>
-              <span className="mt-2 block">Build Your Future.</span>
+              <span className="mt-2 block">Build Your</span>
+              <span> Future.</span>
             </h1>
 
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-leaf-navy">
+            <p className="mt-7 max-w-xl text-lg leading-8 text-leaf-navy">
               Learn practical skills, explore modern technologies, and build
               the confidence you need to move forward in your career.
             </p>
@@ -44,7 +45,7 @@ export default function Hero() {
               <div className="absolute inset-0 rounded-full bg-leaf-soft/70 blur-3xl" />
 
               <Image
-                src="/heroimg.png"
+                src="/newHeroImg.png"
                 alt="Student learning with a laptop"
                 width={600}
                 height={600}
@@ -76,9 +77,9 @@ export default function Hero() {
           <div className="relative hidden items-center justify-center md:flex md:justify-end">
             <div className="absolute right-0 top-1/2 h-[420px] w-[420px] -translate-y-1/2 rounded-full bg-leaf-soft/70 blur-3xl" />
 
-            <div className="relative max-w-[600px]">
+            <div className="relative max-w-150">
               <Image
-                src="/heroimg.png"
+                src="/newHeroImg.png"
                 alt="Student learning with a laptop"
                 width={600}
                 height={600}

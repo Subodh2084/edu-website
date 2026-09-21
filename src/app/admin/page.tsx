@@ -41,12 +41,6 @@ export default function AdminDashboard() {
       icon: GraduationCap,
     },
     {
-      title: "Instructors",
-      value: stats ? stats.instructorsCount.toString() : "0",
-      description: "Active instructors",
-      icon: Users,
-    },
-    {
       title: "New Messages",
       value: stats ? stats.newMessagesCount.toString() : "0",
       description: "Pending contact messages",
@@ -102,8 +96,6 @@ export default function AdminDashboard() {
           );
         })}
       </div>
-
-      {/* Recent Activity Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Courses */}
         <Card className="border-leaf-border bg-white">
