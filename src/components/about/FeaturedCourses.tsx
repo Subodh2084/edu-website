@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -13,22 +14,30 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-import { courses } from "@/data/courses";
+import { getFeaturedCourses } from "@/lib/queries/courses";
+import type { Course } from "@/types/course";
 
 export default function FeaturedCourses() {
-  const featuredCourses = courses.filter(
-    (course) => course.popular && course.status === "published",
-  );
+  const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    getFeaturedCourses().then((data) => {
+      setFeaturedCourses(data);
+    });
+  }, []);
 
   if (!featuredCourses.length) return null;
 
   return (
-    <section className="py-20 sm:py-24">
+    <section id="featured-courses" className="py-20 sm:py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-8">
         <div className="max-w-xl">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-leaf-green-dark">
+          <div className=" border-l-3 border-leaf-green pl-3">
+             <p className="mb-3 text-sm  font-semibold uppercase tracking-wider text-leaf-green-dark">
             Featured Courses
           </p>
+          </div>
+         
 
           <h2 className="text-3xl font-bold leading-tight tracking-tight text-leaf-navy sm:text-4xl">
             Learn <span className="italic">essential</span> career and{" "}
@@ -57,10 +66,10 @@ export default function FeaturedCourses() {
                     href={`/courses/${course.slug}`}
                     className="group block"
                   >
-                  <Card className="overflow-hidden border border-leaf-border bg-white py-0">
+                  <Card className="overflow-hidden border border-leaf-border bg-white py-0 hover:shadow-lg">
                       <div className="relative aspect-16/10 overflow-hidden bg-leaf-soft">
                         <Image
-                          src={course.thumbnail}
+                          src={course.thumbnail || "/courses/web-development.jpg"}
                           alt={course.title}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"

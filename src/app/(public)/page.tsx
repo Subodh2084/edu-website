@@ -4,18 +4,22 @@ import Hero from "@/components/home/HeroSection";
 import PopularCourses from "@/components/home/PopularCourses";
 import Testimonials from "@/components/home/Testimonial";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
-import Image from "next/image";
+import FAQSection from "@/components/home/FAQSection";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default function Home() {
   return (
     <>
-     <Hero/>
-     <FeaturedCourses/>
-     <WhyChooseUs/>
-     <PopularCourses/>
-     <CTA/>
-     <Testimonials/>
+      <Hero />
+      <FeaturedCourses />
+      <WhyChooseUs />
+      <PopularCourses />
+       <CTA />
+      <Testimonials />
+      <FAQSection />
+     
     </>
-    
   );
 }
