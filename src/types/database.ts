@@ -133,6 +133,7 @@ export interface Course {
   featured: boolean;
   popular: boolean;
   status: CourseStatus;
+  syllabus_pdf_url: string | null;
   created_at: string;
   updated_at: string;
 }
