@@ -172,9 +172,9 @@ export default function CourseDetailsHero({
                 <ArrowRight className="size-4" />
               </Link>
 
-              {((course as any).syllabus_pdf_url || (course as any).pdf_url) && (
+              {course.syllabus_pdf_url && (
                 <a
-                  href={(course as any).syllabus_pdf_url || (course as any).pdf_url}
+                  href={course.syllabus_pdf_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
