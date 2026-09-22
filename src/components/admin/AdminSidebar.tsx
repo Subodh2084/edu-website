@@ -10,6 +10,7 @@ import {
   MessageSquare,
   HelpCircle,
   Settings,
+  Tag,
   LogOut,
 } from "lucide-react";
 import {
@@ -60,6 +61,11 @@ const links = [
     href: "/admin/settings",
     icon: Settings,
   },
+   {
+    title: "Offers",
+    href: "/admin/offers",
+    icon: Tag,
+  },
 ];
 
 export default function AdminSidebar() {
@@ -76,16 +82,16 @@ export default function AdminSidebar() {
 
   return (
     <Sidebar className="bg-leaf-navy text-white">
-      <div className="flex items-center justify-center gap-2 border-b border-white/10 p-4">
+      <div className="flex flex-col items-center justify-center gap-2 border-b border-white/10 p-4">
         <Image
-          src="/companyLogo/companyLogo.png"
+          src="/companyLogo/logoDark.png"
           alt="LeafClutch Technology"
-          width={50}
-          height={50}
+          width={150}
+          height={150}
         />
 
-        <span className="text-sm font-bold">
-          LeafClutch Technology
+        <span className="text-lg font-bold">
+          Leafclutch Technology
         </span>
       </div>
       <SidebarContent>

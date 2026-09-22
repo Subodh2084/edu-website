@@ -5,6 +5,7 @@ import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 import WhatsAppButton from "@/components/home/WhatsAppButton";
 import { createClient } from "@/lib/supabase/server";
+import ActiveOfferModal from "@/components/home/ActiveOfferModal";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -51,6 +52,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         <Footer />
         {whatsapp && <WhatsAppButton number={whatsapp} />}
+        <ActiveOfferModal />
       </body>
     </html>
   );

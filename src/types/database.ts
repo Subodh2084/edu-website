@@ -75,6 +75,11 @@ export interface Database {
         Insert: Omit<FAQ, "id" | "created_at" | "updated_at">;
         Update: Partial<Omit<FAQ, "id">>;
       };
+      offers: {
+        Row: Offer;
+        Insert: Omit<Offer, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Offer, "id">>;
+      };
       team_members: {
         Row: TeamMember;
         Insert: Omit<TeamMember, "id" | "created_at" | "updated_at">;
@@ -250,6 +255,18 @@ export interface FAQ {
   category: FAQCategory;
   course_id: string | null;
   display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Offer {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail_url: string | null;
+  price: number;
+  discount_price: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
