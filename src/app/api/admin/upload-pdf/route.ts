@@ -101,23 +101,6 @@ export async function POST(request: Request) {
         .single();
     }
 
-    // Fallback: If columns do not exist in DB schema, embed in description column
-    if (dbUpdate.error) {
-      const { data: currentCourse } = await (supabase.from("courses") as any)
-        .select("description")
-        .eq("id", courseId)
-        .single();
-
-      let desc = currentCourse?.description || "";
-      desc = desc.replace(/<!-- SYLLABUS_PDF_URL:.*? -->/g, "").trim();
-      desc = `${desc}\n<!-- SYLLABUS_PDF_URL:${pdfUrl} -->`;
-
-      dbUpdate = await (supabase.from("courses") as any)
-        .update({ description: desc })
-        .eq("id", courseId)
-        .select()
-        .single();
-    }
 
     if (dbUpdate.error) {
       console.error("Failed to update course PDF URL in database:", dbUpdate.error);

@@ -115,16 +115,10 @@ export async function POST(request: Request) {
             .single();
         }
 
-        // If both column names fail (neither column exists), strip both and store in description comment
+        // If both column names fail (neither column exists), remove PDF fields and retry
         if (retry.error) {
           delete fallbackData.syllabus_pdf_url;
           delete fallbackData.pdf_url;
-
-          if (pdfValue) {
-            let desc = fallbackData.description || "";
-            desc = desc.replace(/<!-- SYLLABUS_PDF_URL:.*? -->/g, "").trim();
-            fallbackData.description = `${desc}\n<!-- SYLLABUS_PDF_URL:${pdfValue} -->`;
-          }
 
           retry = await (supabase.from("courses") as any)
             .update(fallbackData)
@@ -155,10 +149,6 @@ export async function POST(request: Request) {
     const pdfUrl = payload.syllabus_pdf_url || payload.pdf_url || null;
 
     let courseDescription = payload.description || "";
-    if (pdfUrl) {
-      courseDescription = courseDescription.replace(/<!-- SYLLABUS_PDF_URL:.*? -->/g, "").trim();
-      courseDescription = `${courseDescription}\n<!-- SYLLABUS_PDF_URL:${pdfUrl} -->`;
-    }
 
     const courseData: Record<string, any> = {
       title: payload.title,

@@ -163,17 +163,6 @@ export async function getCourseById(courseId: string): Promise<AdminCourseItem |
       return null;
     }
   }
-
-  if (courseObj) {
-    if (!courseObj.syllabus_pdf_url && !courseObj.pdf_url && courseObj.description) {
-      const match = courseObj.description.match(/<!-- SYLLABUS_PDF_URL:(.*?) -->/);
-      if (match && match[1]) {
-        courseObj.syllabus_pdf_url = match[1];
-        courseObj.pdf_url = match[1];
-      }
-    }
-  }
-
   return courseObj as AdminCourseItem;
 }
 
