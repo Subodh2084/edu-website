@@ -12,7 +12,7 @@ export default function WhyChooseUs() {
           <div className="flex justify-center lg:-translate-y-10">
             <div className="relative h-[400px] w-[400px] overflow-hidden rounded-xl sm:h-[460px] sm:w-[250px]">
               <Image
-                src="/mentor.avif"
+                src="/Supporting.avif"
                 alt="Student learning"
                 fill
                 className="object-cover"
