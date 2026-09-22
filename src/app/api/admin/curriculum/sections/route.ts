@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     if (id) {
       // Update existing section
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("course_sections")
         .update(secData)
         .eq("id", id)
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ data });
     } else {
       // Determine the next display_order (append at end)
-      const { data: maxRow } = await supabase
+      const { data: maxRow } = await (supabase as any)
         .from("course_sections")
         .select("display_order")
         .eq("course_id", courseId)
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       const nextOrder = maxRow ? (maxRow.display_order ?? 0) + 1 : 0;
 
       // Insert new section
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("course_sections")
         .insert({ ...secData, display_order: nextOrder })
         .select()
@@ -74,7 +74,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Section id is required" }, { status: 400 });
     }
 
-    const { error } = await supabase.from("course_sections").delete().eq("id", id);
+    const { error } = await (supabase as any).from("course_sections").delete().eq("id", id);
     if (error) {
       console.error("Section delete error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });

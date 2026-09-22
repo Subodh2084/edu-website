@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     if (id) {
       // Update existing lesson
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("course_lessons")
         .update(lessonData)
         .eq("id", id)
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ data });
     } else {
       // Determine the next display_order (append at end of section)
-      const { data: maxRow } = await supabase
+      const { data: maxRow } = await (supabase as any)
         .from("course_lessons")
         .select("display_order")
         .eq("section_id", sectionId)
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       const nextOrder = maxRow ? (maxRow.display_order ?? 0) + 1 : 0;
 
       // Insert new lesson
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("course_lessons")
         .insert({ ...lessonData, display_order: nextOrder })
         .select()
@@ -79,7 +79,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Lesson id is required" }, { status: 400 });
     }
 
-    const { error } = await supabase.from("course_lessons").delete().eq("id", id);
+    const { error } = await (supabase as any).from("course_lessons").delete().eq("id", id);
     if (error) {
       console.error("Lesson delete error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
