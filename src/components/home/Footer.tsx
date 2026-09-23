@@ -31,8 +31,6 @@ export default function Footer() {
 
   useEffect(() => {
     let isMounted = true;
-
-    // Fetch live site settings
     getSiteSettings().then((data) => {
       if (data && isMounted) {
         setSettings((prev) => ({
@@ -45,8 +43,6 @@ export default function Footer() {
         }));
       }
     });
-
-    // Fetch popular courses
     getPopularCourses().then((data) => {
       if (data && data.length > 0 && isMounted) {
         setPopularCourses(data);
@@ -99,8 +95,6 @@ export default function Footer() {
       <div className="footer-main">
         <div className="container">
           <div className="footer-grid">
-
-            {/* Brand Column */}
             <div className="footer-brand">
               <Link href="/" className="footer-logo" aria-label={`${companyName} Home`}>
                 <Image
@@ -200,9 +194,6 @@ export default function Footer() {
                 </li>
                 <li>
                   <Link href="/contact">Contact</Link>
-                </li>
-                <li>
-                  <Link href="/admin">Admin Dashboard</Link>
                 </li>
               </ul>
             </div>

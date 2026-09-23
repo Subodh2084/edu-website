@@ -50,7 +50,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-leaf-navy">Dashboard</h1>
@@ -65,14 +64,12 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
-
-      {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => {
           const Icon = stat.icon;
 
           return (
-            <Card key={stat.title} className="shadow-sm border-leaf-border bg-white">
+            <Card key={stat.title} className="shadow-lg border-2 border-leaf-border bg-white">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-leaf-muted">
                   {stat.title}
@@ -97,8 +94,8 @@ export default function AdminDashboard() {
         })}
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Courses */}
-        <Card className="border-leaf-border bg-white">
+     
+        <Card className=" border-2 shadow-lg border-leaf-border bg-white">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg font-bold text-leaf-navy">Recent Courses</CardTitle>
@@ -145,9 +142,7 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
-
-        {/* Recent Contact Messages */}
-        <Card className="border-leaf-border bg-white">
+        <Card className="shadow-lg border-2 border-leaf-border bg-white">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg font-bold text-leaf-navy">Recent Messages</CardTitle>

@@ -5,7 +5,7 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 export default function CTA() {
   return (
     <section className="px-5 py-20 sm:px-8 sm:py-24 lg:px-12">
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-2xl border border-leaf-border bg-white px-6 py-14 sm:px-10 sm:py-16 lg:px-16">
+      <div className="relative mx-auto max-w-7xl shadow-xl border-2 overflow-hidden rounded-2xl border border-leaf-border bg-white px-6 py-14 sm:px-10 sm:py-16 lg:px-16">
 
         <div className="pointer-events-none absolute -right-32 -top-32 size-96 rounded-full bg-leaf-green/15 blur-3xl" />
 

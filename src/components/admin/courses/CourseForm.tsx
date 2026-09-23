@@ -220,9 +220,6 @@ export default function CourseForm({
               {errorMessage}
             </p>
           )}
-
-          {/* Title */}
-
           <div className="space-y-2">
             <label className="text-sm font-medium text-leaf-navy">
               Course Title
@@ -239,9 +236,6 @@ export default function CourseForm({
               </p>
             )}
           </div>
-
-          {/* Short Description */}
-
           <div className="space-y-2">
             <label className="text-sm font-medium text-leaf-navy">
               Short Description
@@ -258,9 +252,6 @@ export default function CourseForm({
               </p>
             )}
           </div>
-
-          {/* Description */}
-
           <div className="space-y-2">
             <label className="text-sm font-medium text-leaf-navy">
               Description
@@ -279,11 +270,7 @@ export default function CourseForm({
             )}
           </div>
 
-          {/* Course Details */}
-
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Category */}
-
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">
                 Category
@@ -360,9 +347,6 @@ export default function CourseForm({
                 </p>
               )}
             </div>
-
-            {/* Discount Price */}
-
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">
                 Discount Price
@@ -460,8 +444,6 @@ export default function CourseForm({
               )}
             </div>
 
-            {/* Status */}
-
             <div className="space-y-2">
               <label className="text-sm font-medium text-leaf-navy">
                 Status
@@ -522,7 +504,7 @@ export default function CourseForm({
             />
 
             {thumbnail && (
-              <div className="relative mt-3 h-52 w-full overflow-hidden rounded-lg border border-leaf-border">
+              <div className="relative mt-3 h-52 w-52 overflow-hidden rounded-lg border border-leaf-border">
                 <Image
                   src={thumbnail}
                   alt="Course thumbnail preview"

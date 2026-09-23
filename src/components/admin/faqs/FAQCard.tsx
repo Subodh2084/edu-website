@@ -34,8 +34,6 @@ interface FAQCardProps {
 
 export default function FAQCard({ faq, onDelete }: FAQCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-  // Use dynamic course_title if joined, or fallback to static lookup
   const courseTitle =
     faq.course_title ||
     (faq.course_id ? courses.find((c) => c.id === faq.course_id)?.title : null) ||
@@ -44,7 +42,7 @@ export default function FAQCard({ faq, onDelete }: FAQCardProps) {
 
   return (
     <>
-      <Card className="border-leaf-border shadow-lg bg-white flex flex-col justify-between">
+      <Card className="border-leaf-border border-2 shadow-lg bg-white flex flex-col justify-between">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-2">
             <Badge

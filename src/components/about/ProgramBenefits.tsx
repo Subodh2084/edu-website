@@ -72,8 +72,8 @@ export default function ProgramBenefits() {
 
         <div className="mt-14 grid gap-5 lg:grid-cols-2">
           {featuredBenefit && (
-            <div className="group relative min-h-[420px] overflow-hidden rounded-2xl bg-leaf-bg p-8 sm:p-10">
-              <div className="absolute right-0 top-0 h-full w-[48%] overflow-hidden">
+            <div className="group shadow-xl border-2 border-leaf-border relative min-h-[420px] overflow-hidden rounded-2xl bg-leaf-bg p-8 sm:p-10">
+              <div className="absolute  right-0 top-0 h-full w-[48%] overflow-hidden">
                 <Image
                   src="/about/program-mentor.jpg"
                   alt="Expert mentor guiding students"
@@ -115,7 +115,7 @@ export default function ProgramBenefits() {
               return (
                 <div
                   key={benefit.title}
-                  className="group rounded-2xl border border-leaf-border bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-leaf-green/40 hover:shadow-md"
+                  className="group shadow-xl  rounded-2xl border-1 border-leaf-border bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-leaf-green/40 hover:shadow-md"
                 >
                   <div className="flex size-11 items-center justify-center rounded-xl text-leaf-green-dark transition-colors duration-300">
                     <Icon className="size-8" />

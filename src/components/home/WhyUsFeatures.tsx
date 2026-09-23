@@ -50,7 +50,7 @@ export default function WhyUsFeatures() {
           return (
             <div
               key={feature.title}
-              className="group rounded-xl border border-leaf-border bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-leaf-green/40 hover:shadow-md"
+              className="group rounded-xl shadow-xl border-2 border-leaf-border bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-leaf-green/40 hover:shadow-md"
             >
               <div className="flex size-11 items-center justify-center rounded-lg text-leaf-green-dark">
                 <Icon className="size-7" />

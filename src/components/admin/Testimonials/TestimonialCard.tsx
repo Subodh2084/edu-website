@@ -53,7 +53,7 @@ export default function TestimonialCard({
 
   return (
     <>
-      <Card className="flex flex-col justify-between border-leaf-border bg-white">
+      <Card className="flex flex-col border-2 shadow-lg justify-between border-leaf-border bg-white">
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
