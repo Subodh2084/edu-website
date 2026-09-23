@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
 import type { SiteSettings } from "@/types/site-settings";
 
-export async function getSiteSettings(): Promise<SiteSettings | null> {
-  const supabase = createClient();
+export async function getSiteSettings(
+  supabase = createClient(),
+): Promise<SiteSettings | null> {
   try {
     const { data, error } = await supabase
       .from("site_settings")

@@ -12,7 +12,9 @@ import {
   Settings,
   Tag,
   LogOut,
+  ChartColumnBig
 } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -51,6 +53,16 @@ const links = [
     href: "/admin/faqs",
     icon: HelpCircle,
   },
+    {
+    title: "Offers",
+    href: "/admin/offers",
+    icon: Tag,
+  },
+    {
+    title: "Stats",
+    href: "/admin/stats",
+    icon: ChartColumnBig,
+  },
   {
     title: "Contact Messages",
     href: "/admin/contact-messages",
@@ -61,11 +73,7 @@ const links = [
     href: "/admin/settings",
     icon: Settings,
   },
-   {
-    title: "Offers",
-    href: "/admin/offers",
-    icon: Tag,
-  },
+ 
 ];
 
 export default function AdminSidebar() {

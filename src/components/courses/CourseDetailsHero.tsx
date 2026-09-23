@@ -1,4 +1,6 @@
+"use client"
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -18,19 +20,41 @@ interface CourseHeroProps {
 function toYouTubeEmbed(url: string): string | null {
   try {
     const u = new URL(url);
+
     const v = u.searchParams.get("v");
-    if (v) return `https://www.youtube.com/embed/${v}`;
-    if (u.hostname === "youtu.be") return `https://www.youtube.com/embed${u.pathname}`;
-    if (u.pathname.startsWith("/embed/")) return url;
+
+    if (v) {
+      return `https://www.youtube.com/embed/${v}`;
+    }
+
+    if (u.hostname === "youtu.be") {
+      return `https://www.youtube.com/embed${u.pathname}`;
+    }
+
+    if (u.pathname.startsWith("/embed/")) {
+      return url;
+    }
   } catch {
     return null;
   }
+
   return null;
 }
 
-export default function CourseDetailsHero({
-  course,
-}: CourseHeroProps) {
+export default function CourseDetailsHero({ course }: CourseHeroProps) {
+  const [showCard, setShowCard] = useState(true);
+
+useEffect(() => {
+  const handleScroll = () => {
+    setShowCard(window.scrollY < 4000);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+}, []);
   const embedSrc = course.preview_video_url
     ? toYouTubeEmbed(course.preview_video_url)
     : null;
@@ -49,14 +73,9 @@ export default function CourseDetailsHero({
 
           <span className="mx-2">/</span>
 
-          <span className="text-white/90">
-            {course.title}
-          </span>
+          <span className="text-white/90">{course.title}</span>
         </div>
-
-        {/* Hero Content */}
-        <div className="grid items-center gap-10 lg:grid-cols-[1fr_380px]">
-          {/* Left Content */}
+        <div className="grid items-start gap-10 lg:grid-cols-[1fr_380px]">
           <div className="max-w-3xl">
             <Badge className="border-0 bg-leaf-green text-leaf-navy hover:bg-leaf-green">
               {course.level}
@@ -69,8 +88,6 @@ export default function CourseDetailsHero({
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
               {course.short_description}
             </p>
-
-            {/* Course Meta */}
             <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/80">
               <span className="flex items-center gap-2">
                 <Clock className="size-4 text-leaf-green" />
@@ -88,121 +105,137 @@ export default function CourseDetailsHero({
               </span>
             </div>
           </div>
-          <div
-            className="
-              relative
-              mt-2
-              w-full
-              max-w-md
-              overflow-hidden
-              rounded-xl
-              bg-white
-              shadow-xl
-              lg:fixed
-              lg:right-10
-              lg:top-24
-              lg:mt-0
-              z-20
-            "
-          >
-            {/* Video or Thumbnail */}
-            <div className="relative aspect-video w-full overflow-hidden bg-black">
-              {embedSrc ? (
-                <iframe
-                  src={embedSrc}
-                  title={`${course.title} – Preview Video`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="h-full w-full border-0"
-                />
-              ) : (
-                <Image
-                  src={course.thumbnail}
-                  alt={course.title}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 380px"
-                  className="object-cover"
-                />
-              )}
-            </div>
-
-            {/* Pricing */}
-            <div className="p-6">
-              {/* <div className="flex items-center gap-3">
-                {course.discount_price ? (
-                  <>
-                    <span className="text-2xl font-bold text-leaf-navy">
-                      NPR{" "}
-                      {course.discount_price.toLocaleString()}
-                    </span>
-
-                    <span className="text-sm text-leaf-muted line-through">
-                      NPR {course.price.toLocaleString()}
-                    </span>
-                  </>
+          {
+            showCard &&( <aside className="lg:fixed right-20">
+            <div
+              className="
+                w-full
+                max-w-md
+                overflow-hidden
+                rounded-xl
+                bg-white
+                shadow-xl
+              "
+            >
+              <div className="relative aspect-video w-full overflow-hidden bg-black">
+                {embedSrc ? (
+                  <iframe
+                    src={embedSrc}
+                    title={`${course.title} – Preview Video`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="h-full w-full border-0"
+                  />
                 ) : (
-                  <span className="text-2xl font-bold text-leaf-navy">
-                    NPR {course.price.toLocaleString()}
-                  </span>
+                  <Image
+                    src={course.thumbnail}
+                    alt={course.title}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 380px"
+                    className="object-cover"
+                  />
                 )}
-              </div> */}
+              </div>
 
-              <Link
-                href={`/contact`}
-                className="
-                  mt-5
-                  flex
-                  w-full
-                  items-center
-                  justify-center
-                  gap-2
-                  rounded-md
-                  bg-leaf-green-dark
-                  px-4
-                  py-3
-                  text-sm
-                  font-semibold
-                  text-white
-                  transition-colors
-                  hover:bg-leaf-green
-                "
-              >
-                Enroll Now
-                <ArrowRight className="size-4" />
-              </Link>
+              {/* Card Content */}
+              <div className="p-6">
+                {/* Course Name */}
+                <div className="mb-5">
+                  <p className="text-xs font-medium text-leaf-muted">
+                    Course
+                  </p>
 
-              {course.syllabus_pdf_url && (
-                <a
-                  href={course.syllabus_pdf_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  <h2 className="mt-1 text-lg font-bold leading-snug text-leaf-navy">
+                    {course.title}
+                  </h2>
+                </div>
+                {/* Pricing */}
+                <div className="border-t border-leaf-border pt-5">
+                  <p className="text-xs font-medium text-leaf-muted">
+                    Course Fee
+                  </p>
+
+                  <div className="mt-1 flex items-center gap-3">
+                    {course.discount_price ? (
+                      <>
+                        <span className="text-2xl font-bold text-leaf-navy">
+                          NPR {course.discount_price.toLocaleString()}
+                        </span>
+
+                        <span className="text-sm text-leaf-muted line-through">
+                          NPR {course.price.toLocaleString()}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-2xl font-bold text-leaf-navy">
+                        NPR {course.price.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Enroll */}
+                <Link
+                  href="/contact"
                   className="
-                    mt-3
+                    mt-5
                     flex
                     w-full
                     items-center
                     justify-center
                     gap-2
                     rounded-md
-                    border
-                    border-red-200
-                    bg-red-50
+                    bg-leaf-green-dark
                     px-4
-                    py-2.5
-                    text-xs
-                    font-bold
-                    text-red-700
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-white
                     transition-colors
-                    hover:bg-red-100
+                    hover:bg-leaf-green
                   "
                 >
-                  <FileText className="size-4 text-red-600" />
-                  Download Syllabus (PDF)
-                </a>
-              )}
+                  Enroll Now
+                  <ArrowRight className="size-4" />
+                </Link>
+
+                {/* Syllabus */}
+                {course.syllabus_pdf_url && (
+                  <a
+                    href={course.syllabus_pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="
+                      mt-3
+                      flex
+                      w-full
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-md
+                      border
+                      border-red-200
+                      bg-red-50
+                      px-4
+                      py-2.5
+                      text-xs
+                      font-bold
+                      text-red-700
+                      transition-colors
+                      hover:bg-red-100
+                    "
+                  >
+                    <FileText className="size-4 text-red-600" />
+                    Download Syllabus (PDF)
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
+          </aside>)
+          }
+          
+         
         </div>
       </div>
     </section>
