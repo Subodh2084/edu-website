@@ -46,7 +46,7 @@ export default function CourseDetailsHero({ course }: CourseHeroProps) {
 
 useEffect(() => {
   const handleScroll = () => {
-    setShowCard(window.scrollY < 4000);
+    setShowCard(window.scrollY < 3000);
   };
 
   window.addEventListener("scroll", handleScroll);
@@ -106,7 +106,7 @@ useEffect(() => {
             </div>
           </div>
           {
-            showCard &&( <aside className="lg:fixed right-20">
+            showCard && <aside className="lg:fixed right-20">
             <div
               className="
                 w-full
@@ -174,8 +174,6 @@ useEffect(() => {
                     )}
                   </div>
                 </div>
-
-                {/* Enroll */}
                 <Link
                   href="/contact"
                   className="
@@ -199,8 +197,6 @@ useEffect(() => {
                   Enroll Now
                   <ArrowRight className="size-4" />
                 </Link>
-
-                {/* Syllabus */}
                 {course.syllabus_pdf_url && (
                   <a
                     href={course.syllabus_pdf_url}
@@ -232,10 +228,8 @@ useEffect(() => {
                 )}
               </div>
             </div>
-          </aside>)
+          </aside>
           }
-          
-         
         </div>
       </div>
     </section>
